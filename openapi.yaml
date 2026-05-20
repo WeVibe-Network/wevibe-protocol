@@ -1,0 +1,1515 @@
+openapi: "3.1.0"
+info:
+  title: WeVibe Network Hub API
+  version: "0.3.0"
+  description: >
+    WeVibe Network Hub — org-scoped encrypted process memory for AI coding agents.
+    All memory content is encrypted client-side before reaching the Hub.
+    The Hub stores ciphertext only and never holds plaintext content.
+    Memory content is persisted on-chain; the Hub provides API access,
+    moderation queue, vector search ranking, and billing.
+  contact:
+    url: https://github.com/WeVibe-Network
+
+servers:
+  - url: http://localhost:4440
+    description: Local development
+
+security:
+  - EchoSigned: []
+
+components:
+  securitySchemes:
+    EchoSigned:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: >
+        WeVibe-Signed scheme: `WeVibe-Signed <pubkey>:<timestamp>:<signature>`
+        where signature is Ed25519 over the timestamp string (RFC3339).
+        Timestamp must be within 5 minutes of server time.
+
+    BodySignature:
+      type: apiKey
+      in: header
+      name: X-Signature
+      description: >
+        Ed25519 signature (hex) over a canonical message derived from request body fields.
+        Used for org creation, member invite, epoch rotation, and approval/deny actions.
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+
+    # ── Org schemas ─────────────────────────────────────────────────
+
+    OrgInfo:
+      type: object
+      required: [org_id, org_name, domain, leader_pubkey, current_epoch, egress_mode, allowed_providers, status, rotation_status, required_approvals, created_at]
+      properties:
+        org_id: { type: string }
+        org_name: { type: string }
+        domain: { type: string }
+        leader_pubkey: { type: string, description: Hex Ed25519 public key }
+        current_epoch: { type: integer }
+        egress_mode: { type: string, enum: [local_only, allowlist, unrestricted] }
+        allowed_providers: { type: array, items: { type: string } }
+        status: { type: string, enum: [active, suspended, dissolved] }
+        rotation_status: { type: string, enum: [active, rotation_pending] }
+        required_approvals: { type: integer }
+        created_at: { type: string, format: date-time }
+
+    CreateOrgRequest:
+      type: object
+      required: [org_id, leader_pubkey, leader_x25519_pubkey, org_name, domain, pk_mod, signature, enc_envelope, search_envelope, mod_envelope]
+      properties:
+        org_id: { type: string }
+        leader_pubkey: { type: string, description: Hex Ed25519 public key }
+        leader_x25519_pubkey: { type: string, description: Hex X25519 public key }
+        org_name: { type: string }
+        domain: { type: string }
+        fee_model: { type: object, additionalProperties: true }
+        pk_mod: { type: string, description: Hex X25519 public key for moderation identity }
+        signature: { type: string, description: Hex Ed25519 signature over canonical request }
+        enc_envelope: { type: string, description: Base64-encoded sealed encryption key envelope }
+        search_envelope: { type: string, description: Base64-encoded sealed search key envelope }
+        mod_envelope: { type: string, description: Base64-encoded sealed moderation private key envelope }
+
+    UpdateOrgConfigRequest:
+      type: object
+      required: [required_approvals]
+      properties:
+        required_approvals: { type: integer, minimum: 1 }
+
+    # ── Epoch schemas ───────────────────────────────────────────────
+
+    RotateEpochRequest:
+      type: object
+      required: [new_pk_mod, signed_by, signature, envelopes]
+      properties:
+        new_pk_mod: { type: string }
+        signed_by: { type: string }
+        signature: { type: string }
+        envelopes:
+          type: array
+          items: { $ref: "#/components/schemas/MemberEnvelopePair" }
+
+    MemberEnvelopePair:
+      type: object
+      required: [pubkey, enc_envelope, search_envelope]
+      properties:
+        pubkey: { type: string }
+        enc_envelope: { type: string }
+        search_envelope: { type: string }
+        mod_envelope: { type: string, nullable: true }
+
+    EpochManifestResponse:
+      type: object
+      required: [org_id, epoch_id, pk_mod, signed_by, signature, created_at]
+      properties:
+        org_id: { type: string }
+        epoch_id: { type: integer }
+        pk_mod: { type: string }
+        signed_by: { type: string }
+        signature: { type: string }
+        created_at: { type: string, format: date-time }
+
+    # ── Member schemas ──────────────────────────────────────────────
+
+    MemberRecord:
+      type: object
+      required: [org_id, pubkey, x25519_pubkey, role, join_epoch, history_access_from_epoch, active, joined_at]
+      properties:
+        org_id: { type: string }
+        pubkey: { type: string }
+        x25519_pubkey: { type: string }
+        role: { type: string, enum: [leader, moderator, member] }
+        join_epoch: { type: integer }
+        history_access_from_epoch: { type: integer }
+        authorized_until_epoch: { type: integer, nullable: true }
+        active: { type: boolean }
+        joined_at: { type: string, format: date-time }
+
+    InviteMemberRequest:
+      type: object
+      required: [pubkey, x25519_pubkey, role, signed_by, signature, enc_envelope, search_envelope]
+      properties:
+        pubkey: { type: string }
+        x25519_pubkey: { type: string }
+        role: { type: string, enum: [moderator, member] }
+        signed_by: { type: string, description: Must be leader pubkey }
+        signature: { type: string }
+        enc_envelope: { type: string }
+        search_envelope: { type: string }
+        mod_envelope: { type: string, description: Required for moderator role }
+
+    RemoveMemberRequest:
+      type: object
+      required: [signed_by, signature]
+      properties:
+        signed_by: { type: string }
+        signature: { type: string }
+
+    MemberOrgEntry:
+      type: object
+      properties:
+        org_id: { type: string }
+        org_name: { type: string }
+        role: { type: string }
+        current_epoch: { type: integer }
+        history_access_from_epoch: { type: integer }
+        egress_mode: { type: string }
+        allowed_providers: { type: array, items: { type: string } }
+        mod_pubkey: { type: string, nullable: true }
+
+    MemberOrgsResponse:
+      type: object
+      properties:
+        orgs:
+          type: array
+          items: { $ref: "#/components/schemas/MemberOrgEntry" }
+
+    KeyEnvelopeResponse:
+      type: object
+      required: [org_id, epoch_id, enc_envelope, search_envelope]
+      properties:
+        org_id: { type: string }
+        epoch_id: { type: integer }
+        enc_envelope: { type: string }
+        search_envelope: { type: string }
+        mod_envelope: { type: string, nullable: true }
+
+    # ── Dashboard key schemas ───────────────────────────────────────
+
+    RegisterDashboardKeyRequest:
+      type: object
+      required: [pubkey, signed_by, signature]
+      properties:
+        pubkey: { type: string }
+        label: { type: string, default: dashboard }
+        signed_by: { type: string }
+        signature: { type: string }
+
+    # ── Recovery schemas ────────────────────────────────────────────
+
+    StoreRecoverySharesRequest:
+      type: object
+      required: [shares, signed_by, signature]
+      properties:
+        shares:
+          type: array
+          maxItems: 3
+          items:
+            type: object
+            required: [share_index, holder_pubkey, sealed_share]
+            properties:
+              share_index: { type: integer, minimum: 1, maximum: 3 }
+              holder_pubkey: { type: string }
+              sealed_share: { type: string }
+        signed_by: { type: string }
+        signature: { type: string }
+
+    RecoveryShareResponse:
+      type: object
+      properties:
+        org_id: { type: string }
+        share_index: { type: integer }
+        sealed_share: { type: string }
+
+    # ── Memory submission schemas ───────────────────────────────────
+
+    SubmitMemoryRequest:
+      type: object
+      required: [epoch_id, ciphertext, wrapped_dek_mod, submission_hash, contributor_pubkey, contributor_sig]
+      properties:
+        epoch_id: { type: integer }
+        ciphertext: { type: string, description: Hex-encoded AES-GCM ciphertext }
+        wrapped_dek_mod: { type: string, description: Hex DEK sealed to PK_mod(epoch) }
+        submission_hash: { type: string, description: Hex SHA-256 content hash }
+        contributor_pubkey: { type: string }
+        contributor_sig: { type: string }
+        stack_hint: { type: array, items: { type: string } }
+
+    SubmitMemoryResponse:
+      type: object
+      properties:
+        submission_hash: { type: string }
+        status: { type: string, enum: [pending, buffered] }
+
+    # ── Moderation schemas ──────────────────────────────────────────
+
+    PendingQueueItem:
+      type: object
+      properties:
+        submission_hash: { type: string }
+        org_id: { type: string }
+        epoch_id: { type: integer }
+        contributor_pubkey: { type: string }
+        ciphertext_hex: { type: string }
+        wrapped_dek_mod: { type: string }
+        stack_hint: { type: array, items: { type: string } }
+        created_at: { type: string, format: date-time }
+        status: { type: string, enum: [pending, ready, approved, denied, escalated] }
+        votes: { type: integer }
+        required_approvals: { type: integer }
+
+    VoteResponse:
+      type: object
+      properties:
+        status: { type: string }
+        votes: { type: integer }
+        required_approvals: { type: integer }
+        ready: { type: boolean }
+
+    KeywordWithWeight:
+      type: object
+      properties:
+        keyword: { type: string }
+        weight: { type: number }
+
+    ApproveRequest:
+      type: object
+      required: [epoch_id, approved_cid, wrapped_dek_enc, keywords, signed_by, moderator_sig]
+      properties:
+        epoch_id: { type: integer }
+        approved_cid: { type: string }
+        wrapped_dek_enc: { type: string, description: DEK re-wrapped under K_enc(epoch) }
+        content_flags: { type: array, items: { type: string } }
+        keywords:
+          type: array
+          items: { $ref: "#/components/schemas/KeywordWithWeight" }
+        keyword_weights: { type: object, additionalProperties: { type: number } }
+        vector: { type: array, items: { type: number }, description: 768-dim embedding vector }
+        embedding_model_id: { type: string }
+        embedding_schema_version: { type: string }
+        vector_dim: { type: integer }
+        moderator_sig: { type: string }
+        signed_by: { type: string }
+
+    DenyRequest:
+      type: object
+      required: [reason, signed_by, signature]
+      properties:
+        reason: { type: string }
+        signed_by: { type: string }
+        signature: { type: string }
+
+    BatchSubmitResult:
+      type: object
+      properties:
+        submitted: { type: integer }
+        failed: { type: integer }
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              submission_hash: { type: string }
+              tx_hash: { type: string }
+              error: { type: string }
+
+    # ── Query / retrieval schemas ───────────────────────────────────
+
+    QueryRequest:
+      type: object
+      required: [org_id, agent_pubkey, agent_sig]
+      properties:
+        org_id: { type: string }
+        agent_pubkey: { type: string }
+        keyword_weights:
+          type: array
+          items: { $ref: "#/components/schemas/KeywordWithWeight" }
+        vector: { type: array, items: { type: number } }
+        embedding_model_id: { type: string }
+        limit: { type: integer, default: 10 }
+        agent_sig: { type: string }
+
+    ScoringBreakdown:
+      type: object
+      properties:
+        keyword_score: { type: number }
+        vector_score: { type: number }
+        gamma: { type: number }
+        delta: { type: number }
+        capped_boost: { type: number }
+        combined_score: { type: number }
+        keyword_matches:
+          type: array
+          items:
+            type: object
+            properties:
+              keyword: { type: string }
+              query_weight: { type: number }
+              memory_weight: { type: number }
+              product: { type: number }
+        unmatched_query_keywords: { type: array, items: { type: string } }
+
+    MemoryResult:
+      type: object
+      properties:
+        cid: { type: string }
+        org_id: { type: string }
+        epoch_id: { type: integer }
+        wrapped_dek_enc: { type: string }
+        content_flags: { type: array, items: { type: string } }
+        keywords:
+          type: array
+          items: { $ref: "#/components/schemas/KeywordWithWeight" }
+        scoring_breakdown: { $ref: "#/components/schemas/ScoringBreakdown" }
+        chain_attested: { type: boolean }
+
+    QueryResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items: { $ref: "#/components/schemas/MemoryResult" }
+        contested: { type: boolean }
+        receipt_id: { type: string }
+
+    MemoryDetail:
+      type: object
+      properties:
+        cid: { type: string }
+        org_id: { type: string }
+        epoch: { type: integer }
+        encrypted_blob: { type: string, description: Hex-encoded }
+        wrapped_dek_enc: { type: string, description: Hex-encoded }
+        contributor_id: { type: string }
+        state: { type: string }
+        source: { type: string, enum: [chain, pending] }
+
+    MemoryListResponse:
+      type: object
+      properties:
+        memories: { type: array, items: { type: object } }
+        count: { type: integer }
+        next_offset: { type: string, nullable: true }
+
+    RejectRequest:
+      type: object
+      required: [cid, org_id, reason, agent_pubkey, signature]
+      properties:
+        cid: { type: string, description: 64-char hex content hash }
+        org_id: { type: string }
+        reason: { type: string }
+        agent_pubkey: { type: string }
+        signature: { type: string }
+
+    RejectResponse:
+      type: object
+      properties:
+        status: { type: string, example: reported }
+        tx_hash: { type: string }
+
+    # ── Report schemas ──────────────────────────────────────────────
+
+    CreateReportRequest:
+      type: object
+      required: [memory_cid, reason]
+      properties:
+        memory_cid: { type: string }
+        reason: { type: string, enum: [incorrect, outdated, security_risk, spam] }
+        note: { type: string, maxLength: 2000 }
+
+    UpdateReportRequest:
+      type: object
+      required: [action]
+      properties:
+        action: { type: string, enum: [dismiss, archive, set_validity, escalate] }
+
+    EscalationVote:
+      type: object
+      properties:
+        pubkey: { type: string }
+        voted_at: { type: string, format: date-time }
+
+    ReportRecord:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        org_id: { type: string }
+        memory_cid: { type: string }
+        reporter_pubkey: { type: string }
+        reporter_role: { type: string, enum: [leader, moderator, member] }
+        reason: { type: string }
+        note: { type: string, nullable: true }
+        status: { type: string, enum: [pending, reviewed, escalated, resolved] }
+        resolution: { type: string, nullable: true, enum: [dismissed, archived, validity_set] }
+        resolved_by: { type: string, nullable: true }
+        resolved_at: { type: string, format: date-time, nullable: true }
+        escalation_votes:
+          type: array
+          items: { $ref: "#/components/schemas/EscalationVote" }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    ReportListResponse:
+      type: object
+      properties:
+        reports:
+          type: array
+          items: { $ref: "#/components/schemas/ReportRecord" }
+        total: { type: integer }
+
+    # ── Serve event schemas ─────────────────────────────────────────
+
+    RecordServeRequest:
+      type: object
+      required: [memory_content_hash, serve_key, contributor_id, nullifier, epoch_id]
+      properties:
+        memory_content_hash: { type: string, description: 64-char hex }
+        serve_key: { type: string }
+        contributor_id: { type: string }
+        nullifier: { type: string, description: 64-char hex }
+        epoch_id: { type: integer }
+        model_id: { type: string }
+        turn_count: { type: integer }
+
+    RecordServeResponse:
+      type: object
+      properties:
+        status: { type: string, example: recorded }
+        nullifier: { type: string }
+
+    BatchSubmitServesResponse:
+      type: object
+      properties:
+        submitted: { type: integer }
+        tx_hash: { type: string }
+        failed: { type: integer }
+
+    # ── Keyword schemas ─────────────────────────────────────────────
+
+    KeywordInfo:
+      type: object
+      properties:
+        keyword: { type: string }
+        created_at: { type: string, format: date-time }
+        deprecated: { type: boolean }
+        usage_count: { type: integer }
+
+    AddKeywordRequest:
+      type: object
+      required: [keyword]
+      properties:
+        keyword: { type: string }
+
+    MergeKeywordsRequest:
+      type: object
+      required: [source, target]
+      properties:
+        source: { type: string }
+        target: { type: string }
+
+    RenameKeywordRequest:
+      type: object
+      required: [new_name]
+      properties:
+        new_name: { type: string }
+
+    # ── Billing schemas ─────────────────────────────────────────────
+
+    TopUpRequest:
+      type: object
+      required: [org_id, amount, signed_by]
+      properties:
+        org_id: { type: string }
+        amount: { type: integer, minimum: 1 }
+        signed_by: { type: string }
+
+    CreditBalance:
+      type: object
+      properties:
+        org_id: { type: string }
+        balance: { type: integer }
+        transactions:
+          type: array
+          items:
+            type: object
+            properties:
+              txn_id: { type: integer }
+              org_id: { type: string }
+              delta: { type: integer }
+              reason: { type: string }
+              receipt_id: { type: string, nullable: true }
+              actor: { type: string }
+              created_at: { type: string, format: date-time }
+
+    # ── Health schema ───────────────────────────────────────────────
+
+    HealthResponse:
+      type: object
+      properties:
+        status: { type: string }
+        timestamp: { type: string, format: date-time }
+        version: { type: string }
+        db: { type: string, enum: [connected, disconnected] }
+
+paths:
+  # ═══════════════════════════════════════════════════════════════════
+  # HEALTH
+  # ═══════════════════════════════════════════════════════════════════
+
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      security: []
+      tags: [Health]
+      responses:
+        "200":
+          description: Service healthy
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HealthResponse" }
+
+  # ═══════════════════════════════════════════════════════════════════
+  # ORGANIZATIONS
+  # ═══════════════════════════════════════════════════════════════════
+
+  /v1/orgs:
+    post:
+      summary: Create organization
+      operationId: createOrg
+      tags: [Organizations]
+      security:
+        - BodySignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateOrgRequest" }
+      responses:
+        "201":
+          description: Org created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrgInfo" }
+        "400": { description: Invalid request }
+        "401": { description: Signature verification failed }
+        "409": { description: Org already exists }
+
+  /v1/orgs/{orgID}:
+    get:
+      summary: Get organization details
+      operationId: getOrg
+      tags: [Organizations]
+      security: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrgInfo" }
+        "404": { description: Org not found }
+
+  /v1/orgs/{orgID}/config:
+    patch:
+      summary: Update org configuration (leader only)
+      operationId: updateOrgConfig
+      tags: [Organizations]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateOrgConfigRequest" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UpdateOrgConfigRequest" }
+        "403": { description: Not org leader }
+
+  # ═══════════════════════════════════════════════════════════════════
+  # EPOCHS
+  # ═══════════════════════════════════════════════════════════════════
+
+  /v1/orgs/{orgID}/epoch/rotate:
+    post:
+      summary: Rotate epoch and re-key all members (leader only)
+      operationId: rotateEpoch
+      tags: [Epochs]
+      security:
+        - BodySignature: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RotateEpochRequest" }
+      responses:
+        "200":
+          description: Epoch rotated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  buffered_moved: { type: integer }
+        "401": { description: Signature verification failed }
+        "403": { description: Not org leader }
+
+  /v1/orgs/{orgID}/epoch/{epochID}/manifest:
+    get:
+      summary: Get epoch manifest
+      operationId: getEpochManifest
+      tags: [Epochs]
+      security: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: epochID
+          in: path
+          required: true
+          schema: { type: string, description: "Integer epoch ID or 'current'" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EpochManifestResponse" }
+        "404": { description: Manifest not found }
+
+  # ═══════════════════════════════════════════════════════════════════
+  # MEMBERS
+  # ═══════════════════════════════════════════════════════════════════
+
+  /v1/members/{pubkey}/orgs:
+    get:
+      summary: List orgs for a member
+      operationId: getMemberOrgs
+      tags: [Members]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: pubkey
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MemberOrgsResponse" }
+        "401": { description: Authorization pubkey mismatch }
+
+  /v1/orgs/{orgID}/members:
+    get:
+      summary: List org members
+      operationId: listMembers
+      tags: [Members]
+      security: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/MemberRecord" }
+
+    post:
+      summary: Invite member (leader only)
+      operationId: inviteMember
+      tags: [Members]
+      security:
+        - BodySignature: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InviteMemberRequest" }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MemberRecord" }
+        "403": { description: Not org leader }
+        "409": { description: Member already exists }
+
+  /v1/orgs/{orgID}/members/{pubkey}:
+    get:
+      summary: Get member details
+      operationId: getMember
+      tags: [Members]
+      security: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: pubkey
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MemberRecord" }
+        "404": { description: Member not found }
+
+    delete:
+      summary: Remove member (leader only)
+      operationId: removeMember
+      tags: [Members]
+      security:
+        - BodySignature: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: pubkey
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RemoveMemberRequest" }
+      responses:
+        "200": { description: Member removed, rotation pending }
+        "403": { description: Not org leader }
+
+  /v1/orgs/{orgID}/keys/envelope:
+    get:
+      summary: Get key envelope for the requesting member
+      operationId: getKeyEnvelope
+      tags: [Members]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/KeyEnvelopeResponse" }
+        "404": { description: Envelope not found }
+
+  # ═══════════════════════════════════════════════════════════════════
+  # DASHBOARD KEYS
+  # ═══════════════════════════════════════════════════════════════════
+
+  /v1/orgs/{orgID}/dashboard/keys:
+    post:
+      summary: Register a dashboard identity key (leader only)
+      operationId: registerDashboardKey
+      tags: [Dashboard]
+      security:
+        - BodySignature: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterDashboardKeyRequest" }
+      responses:
+        "201": { description: Key registered }
+        "403": { description: Not org leader }
+
+  /v1/orgs/{orgID}/dashboard/keys/{pubkey}:
+    delete:
+      summary: Revoke a dashboard identity key (leader only)
+      operationId: revokeDashboardKey
+      tags: [Dashboard]
+      security:
+        - BodySignature: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: pubkey
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RemoveMemberRequest" }
+      responses:
+        "200": { description: Key revoked }
+        "403": { description: Not org leader }
+
+  # ═══════════════════════════════════════════════════════════════════
+  # RECOVERY
+  # ═══════════════════════════════════════════════════════════════════
+
+  /v1/orgs/{orgID}/recovery/shares:
+    post:
+      summary: Store Shamir recovery shares (leader only)
+      operationId: storeRecoveryShares
+      tags: [Recovery]
+      security:
+        - BodySignature: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StoreRecoverySharesRequest" }
+      responses:
+        "201": { description: Shares stored }
+        "403": { description: Not org leader }
+
+    get:
+      summary: Retrieve recovery share for the requesting holder
+      operationId: getRecoveryShare
+      tags: [Recovery]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/RecoveryShareResponse" }
+        "404": { description: No shares found for this holder }
+
+  # ═══════════════════════════════════════════════════════════════════
+  # MEMORY SUBMISSION & MODERATION
+  # ═══════════════════════════════════════════════════════════════════
+
+  /v1/orgs/{orgID}/submit:
+    post:
+      summary: Submit encrypted memory for moderation
+      operationId: submitMemory
+      tags: [Moderation]
+      security:
+        - BodySignature: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SubmitMemoryRequest" }
+      responses:
+        "201":
+          description: Submitted to moderation queue
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SubmitMemoryResponse" }
+        "202":
+          description: Buffered (epoch rotation pending)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SubmitMemoryResponse" }
+        "400": { description: Hash mismatch or invalid fields }
+        "401": { description: Signature verification failed }
+        "503": { description: Submissions blocked — rotation overdue }
+
+  /v1/orgs/{orgID}/moderation/queue:
+    get:
+      summary: Get pending moderation queue (moderator/leader)
+      operationId: getPendingQueue
+      tags: [Moderation]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PendingQueueItem" }
+        "403": { description: Not moderator or leader }
+
+  /v1/orgs/{orgID}/moderation/{submissionHash}/vote:
+    post:
+      summary: Cast approval vote on pending submission (moderator/leader)
+      operationId: voteOnSubmission
+      tags: [Moderation]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: submissionHash
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/VoteResponse" }
+        "403": { description: Insufficient role }
+        "404": { description: Submission not found }
+        "409": { description: Vote already recorded or submission resolved }
+
+  /v1/orgs/{orgID}/moderation/{submissionHash}/approve:
+    post:
+      summary: Approve pending submission (moderator/leader)
+      operationId: approveSubmission
+      tags: [Moderation]
+      security:
+        - BodySignature: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: submissionHash
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApproveRequest" }
+      responses:
+        "200": { description: Submission approved and indexed }
+        "403": { description: Not moderator }
+        "404": { description: Submission not found or already resolved }
+
+  /v1/orgs/{orgID}/moderation/{submissionHash}/deny:
+    post:
+      summary: Deny pending submission (moderator/leader)
+      operationId: denySubmission
+      tags: [Moderation]
+      security:
+        - BodySignature: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: submissionHash
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DenyRequest" }
+      responses:
+        "200": { description: Submission denied }
+        "403": { description: Not moderator }
+        "404": { description: Submission not found or already resolved }
+
+  /v1/orgs/{orgID}/moderation/batch-submit:
+    post:
+      summary: Batch submit ready memories to chain (leader only)
+      operationId: batchSubmitToChain
+      tags: [Moderation]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BatchSubmitResult" }
+        "403": { description: Not leader }
+
+  # ═══════════════════════════════════════════════════════════════════
+  # SERVE EVENTS
+  # ═══════════════════════════════════════════════════════════════════
+
+  /v1/orgs/{orgID}/serves:
+    post:
+      summary: Record a memory serve event (any member)
+      operationId: recordServeEvent
+      tags: [Serves]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RecordServeRequest" }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RecordServeResponse" }
+        "400": { description: Validation error }
+        "409": { description: Duplicate nullifier }
+
+  /v1/orgs/{orgID}/serves/batch-submit:
+    post:
+      summary: Batch submit pending serves to chain (leader only)
+      operationId: batchSubmitServes
+      tags: [Serves]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BatchSubmitServesResponse" }
+        "403": { description: Not leader }
+
+  # ═══════════════════════════════════════════════════════════════════
+  # RETRIEVAL
+  # ═══════════════════════════════════════════════════════════════════
+
+  /v1/orgs/{orgID}/query:
+    post:
+      summary: Query memories by keywords and/or vector similarity
+      operationId: queryMemories
+      tags: [Retrieval]
+      security: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QueryRequest" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/QueryResponse" }
+        "400": { description: Keywords or vector required }
+        "403": { description: Not a member }
+
+  /v1/orgs/{orgID}/memories:
+    get:
+      summary: List approved memories (paginated scroll)
+      operationId: listMemories
+      tags: [Retrieval]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50, maximum: 200 }
+        - name: offset
+          in: query
+          schema: { type: string, description: Opaque pagination token }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MemoryListResponse" }
+        "403": { description: Not a member }
+
+  /v1/orgs/{orgID}/memories/{cid}:
+    get:
+      summary: Get single memory by content hash
+      operationId: getMemory
+      tags: [Retrieval]
+      security: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: cid
+          in: path
+          required: true
+          schema: { type: string, description: 64-char hex content hash }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MemoryDetail" }
+        "404": { description: Memory not found }
+
+  /v1/orgs/{orgID}/reject:
+    post:
+      summary: Report a memory (submits MsgReportMemory to chain)
+      operationId: rejectMemory
+      tags: [Retrieval]
+      security: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RejectRequest" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RejectResponse" }
+        "400": { description: Invalid CID or missing fields }
+        "503": { description: Chain unavailable }
+
+  # ═══════════════════════════════════════════════════════════════════
+  # REPORTS
+  # ═══════════════════════════════════════════════════════════════════
+
+  /v1/orgs/{orgID}/reports:
+    post:
+      summary: Create a memory report (any member)
+      operationId: createReport
+      tags: [Reports]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateReportRequest" }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  status: { type: string }
+        "400": { description: Invalid reason or missing fields }
+
+    get:
+      summary: List reports (moderator/leader)
+      operationId: listReports
+      tags: [Reports]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string, enum: [pending, reviewed, escalated, resolved] }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50, maximum: 100 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportListResponse" }
+        "403": { description: Moderators only }
+
+  /v1/orgs/{orgID}/reports/{reportID}:
+    get:
+      summary: Get single report (moderator/leader)
+      operationId: getReport
+      tags: [Reports]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: reportID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportRecord" }
+        "404": { description: Report not found }
+
+    patch:
+      summary: Resolve or escalate a report (moderator/leader). On resolution, submits MsgReportMemory to chain.
+      operationId: updateReport
+      tags: [Reports]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: reportID
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateReportRequest" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportRecord" }
+        "400": { description: Invalid action }
+        "403": { description: Moderators only }
+        "404": { description: Report not found }
+        "409": { description: Report already resolved }
+
+  # ═══════════════════════════════════════════════════════════════════
+  # KEYWORDS
+  # ═══════════════════════════════════════════════════════════════════
+
+  /v1/orgs/{orgID}/keywords:
+    get:
+      summary: List org keyword vocabulary (any member)
+      operationId: listKeywords
+      tags: [Keywords]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/KeywordInfo" }
+
+    post:
+      summary: Add keyword to vocabulary (leader only)
+      operationId: addKeyword
+      tags: [Keywords]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AddKeywordRequest" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  keyword: { type: string }
+        "403": { description: Not leader }
+
+  /v1/orgs/{orgID}/keywords/merge:
+    put:
+      summary: Merge source keyword into target (leader only)
+      operationId: mergeKeywords
+      tags: [Keywords]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MergeKeywordsRequest" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  source: { type: string }
+                  target: { type: string }
+        "403": { description: Not leader }
+
+  /v1/orgs/{orgID}/keywords/{keyword}/rename:
+    put:
+      summary: Rename a keyword (leader only)
+      operationId: renameKeyword
+      tags: [Keywords]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: keyword
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RenameKeywordRequest" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  old_name: { type: string }
+                  new_name: { type: string }
+        "403": { description: Not leader }
+
+  /v1/orgs/{orgID}/keywords/{keyword}:
+    delete:
+      summary: Deprecate a keyword (leader only)
+      operationId: deprecateKeyword
+      tags: [Keywords]
+      security:
+        - EchoSigned: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: keyword
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  keyword: { type: string }
+        "403": { description: Not leader }
+
+  # ═══════════════════════════════════════════════════════════════════
+  # BILLING
+  # ═══════════════════════════════════════════════════════════════════
+
+  /v1/billing/topup:
+    post:
+      summary: Top up org credits
+      operationId: topUpCredits
+      tags: [Billing]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TopUpRequest" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  org_id: { type: string }
+                  balance: { type: integer }
+
+  /v1/orgs/{orgID}/credits:
+    get:
+      summary: Get org credit balance and transaction history
+      operationId: getOrgCredits
+      tags: [Billing]
+      security: []
+      parameters:
+        - name: orgID
+          in: path
+          required: true
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CreditBalance" }
+        "404": { description: Org not found }
