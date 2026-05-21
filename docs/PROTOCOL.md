@@ -6,14 +6,14 @@ Any client that correctly implements this spec can participate in the network.
 ## Contents
 
 - `schema.md` — MemoryPack schema and field definitions
-- `openapi.yaml` — OpenAPI 3.1 spec for the optional Echo analytics API (formerly "Hub")
+- `openapi.yaml` — OpenAPI 3.1 spec for the optional WeVibe analytics API (formerly "Hub")
 - `crypto.md` — Key derivation, envelope format, blind token computation
 - `test_vectors/` — Known-input/known-output cases for all crypto operations
 - `contract_test.sh` — Smoke tests validating the spec against the running Hub
 
 ## API Specification
 
-`openapi.yaml` — OpenAPI 3.1 specification for the optional Echo analytics API.
+`openapi.yaml` — OpenAPI 3.1 specification for the optional WeVibe analytics API.
 
 Key security properties documented in the spec:
 - All memory content is encrypted client-side before any analytics surface receives it

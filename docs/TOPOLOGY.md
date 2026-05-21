@@ -1,4 +1,4 @@
-# Echo Protocol Topology
+# WeVibe Protocol Topology
 
 ## Schema Relationships
 

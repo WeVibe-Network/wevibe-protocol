@@ -15,7 +15,7 @@ check() {
 }
 
 echo ""
-echo "Echo Hub — contract tests"
+echo "WeVibe Hub — contract tests"
 echo "========================="
 
 check "health returns ok" "ok" \

@@ -1,4 +1,4 @@
-# Echo Protocol Whitepaper
+# WeVibe Protocol Whitepaper
 
 Version: 1.0 · Sprint 24
 
@@ -39,8 +39,8 @@ The protocol package defines the canonical wire formats shared by wevibe-chain c
 
 - Generated clients published to:
   - TypeScript (`@wevibe-network/api-client`)
-  - Rust (`echo-protocol` crate)
-  - Python (`echo_protocol` wheel)
+  - Rust (`wevibe-protocol` crate)
+  - Python (`wevibe_protocol` wheel)
 - Docs rendered via Redoc and published to internal doc site.
 
 ## Future Work

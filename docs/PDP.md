@@ -1,4 +1,4 @@
-# Echo Protocol PDP
+# WeVibe Protocol PDP
 
 ## Repository Structure
 

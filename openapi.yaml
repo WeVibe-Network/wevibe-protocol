@@ -16,11 +16,11 @@ servers:
     description: Local development
 
 security:
-  - EchoSigned: []
+  - WeVibeSigned: []
 
 components:
   securitySchemes:
-    EchoSigned:
+    WeVibeSigned:
       type: apiKey
       in: header
       name: Authorization
@@ -616,7 +616,7 @@ paths:
       operationId: updateOrgConfig
       tags: [Organizations]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -700,7 +700,7 @@ paths:
       operationId: getMemberOrgs
       tags: [Members]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: pubkey
           in: path
@@ -808,7 +808,7 @@ paths:
       operationId: getKeyEnvelope
       tags: [Members]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -901,7 +901,7 @@ paths:
       operationId: getRecoveryShare
       tags: [Recovery]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -958,7 +958,7 @@ paths:
       operationId: getPendingQueue
       tags: [Moderation]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -979,7 +979,7 @@ paths:
       operationId: voteOnSubmission
       tags: [Moderation]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1056,7 +1056,7 @@ paths:
       operationId: batchSubmitToChain
       tags: [Moderation]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1079,7 +1079,7 @@ paths:
       operationId: recordServeEvent
       tags: [Serves]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1104,7 +1104,7 @@ paths:
       operationId: batchSubmitServes
       tags: [Serves]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1151,7 +1151,7 @@ paths:
       operationId: listMemories
       tags: [Retrieval]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1226,7 +1226,7 @@ paths:
       operationId: createReport
       tags: [Reports]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1253,7 +1253,7 @@ paths:
       operationId: listReports
       tags: [Reports]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1281,7 +1281,7 @@ paths:
       operationId: getReport
       tags: [Reports]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1303,7 +1303,7 @@ paths:
       operationId: updateReport
       tags: [Reports]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1338,7 +1338,7 @@ paths:
       operationId: listKeywords
       tags: [Keywords]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1357,7 +1357,7 @@ paths:
       operationId: addKeyword
       tags: [Keywords]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1385,7 +1385,7 @@ paths:
       operationId: mergeKeywords
       tags: [Keywords]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1414,7 +1414,7 @@ paths:
       operationId: renameKeyword
       tags: [Keywords]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
@@ -1447,7 +1447,7 @@ paths:
       operationId: deprecateKeyword
       tags: [Keywords]
       security:
-        - EchoSigned: []
+        - WeVibeSigned: []
       parameters:
         - name: orgID
           in: path
