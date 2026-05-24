@@ -33,17 +33,15 @@ export * as serveV1 from './wevibe/serve/v1/tx';
 export {
   MsgSubmitCommitment,
   MsgApproveMemory,
-  MsgRejectMemory,
-  MsgPurgeExpired,
-  MsgRelateMemories,
-  MsgApproveRelationship,
-  MsgSetValidityBounds,
-  MsgArchiveMemory,
   MsgReportMemory,
 } from './wevibe/memory/v1/tx';
 
 export {
   MsgRegisterOrg,
+  MsgUpdateMemberRole,
+  MsgRotateEpoch,
+  MsgTransferLeadership,
+  MsgCloseOrg,
   MsgAddMember,
   MsgRemoveMember,
   MsgFundTreasury,

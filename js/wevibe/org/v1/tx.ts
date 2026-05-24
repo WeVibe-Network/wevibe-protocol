@@ -100,6 +100,42 @@ export interface MsgGrantTrialAllowance {
 export interface MsgGrantTrialAllowanceResponse {
 }
 
+export interface MsgUpdateMemberRole {
+  signer: string;
+  orgId: string;
+  pubkey: string;
+  newRole: string;
+}
+
+export interface MsgUpdateMemberRoleResponse {
+}
+
+export interface MsgRotateEpoch {
+  signer: string;
+  orgId: string;
+}
+
+export interface MsgRotateEpochResponse {
+  newEpoch: string;
+}
+
+export interface MsgTransferLeadership {
+  signer: string;
+  orgId: string;
+  newLeader: string;
+}
+
+export interface MsgTransferLeadershipResponse {
+}
+
+export interface MsgCloseOrg {
+  signer: string;
+  orgId: string;
+}
+
+export interface MsgCloseOrgResponse {
+}
+
 function createBaseMsgRegisterOrg(): MsgRegisterOrg {
   return { signer: "", orgId: "", leader: "", storageQuota: "0", retrievalBudget: "0", domain: "" };
 }
@@ -1507,6 +1543,575 @@ export const MsgGrantTrialAllowanceResponse: MessageFns<MsgGrantTrialAllowanceRe
   },
   fromPartial<I extends Exact<DeepPartial<MsgGrantTrialAllowanceResponse>, I>>(_: I): MsgGrantTrialAllowanceResponse {
     const message = createBaseMsgGrantTrialAllowanceResponse();
+    return message;
+  },
+};
+
+function createBaseMsgUpdateMemberRole(): MsgUpdateMemberRole {
+  return { signer: "", orgId: "", pubkey: "", newRole: "" };
+}
+
+export const MsgUpdateMemberRole: MessageFns<MsgUpdateMemberRole> = {
+  encode(message: MsgUpdateMemberRole, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.signer !== "") {
+      writer.uint32(10).string(message.signer);
+    }
+    if (message.orgId !== "") {
+      writer.uint32(18).string(message.orgId);
+    }
+    if (message.pubkey !== "") {
+      writer.uint32(26).string(message.pubkey);
+    }
+    if (message.newRole !== "") {
+      writer.uint32(34).string(message.newRole);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgUpdateMemberRole {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgUpdateMemberRole();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.signer = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.orgId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.pubkey = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.newRole = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgUpdateMemberRole {
+    return {
+      signer: isSet(object.signer) ? globalThis.String(object.signer) : "",
+      orgId: isSet(object.orgId)
+        ? globalThis.String(object.orgId)
+        : isSet(object.org_id)
+        ? globalThis.String(object.org_id)
+        : "",
+      pubkey: isSet(object.pubkey) ? globalThis.String(object.pubkey) : "",
+      newRole: isSet(object.newRole)
+        ? globalThis.String(object.newRole)
+        : isSet(object.new_role)
+        ? globalThis.String(object.new_role)
+        : "",
+    };
+  },
+
+  toJSON(message: MsgUpdateMemberRole): unknown {
+    const obj: any = {};
+    if (message.signer !== "") {
+      obj.signer = message.signer;
+    }
+    if (message.orgId !== "") {
+      obj.orgId = message.orgId;
+    }
+    if (message.pubkey !== "") {
+      obj.pubkey = message.pubkey;
+    }
+    if (message.newRole !== "") {
+      obj.newRole = message.newRole;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgUpdateMemberRole>, I>>(base?: I): MsgUpdateMemberRole {
+    return MsgUpdateMemberRole.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgUpdateMemberRole>, I>>(object: I): MsgUpdateMemberRole {
+    const message = createBaseMsgUpdateMemberRole();
+    message.signer = object.signer ?? "";
+    message.orgId = object.orgId ?? "";
+    message.pubkey = object.pubkey ?? "";
+    message.newRole = object.newRole ?? "";
+    return message;
+  },
+};
+
+function createBaseMsgUpdateMemberRoleResponse(): MsgUpdateMemberRoleResponse {
+  return {};
+}
+
+export const MsgUpdateMemberRoleResponse: MessageFns<MsgUpdateMemberRoleResponse> = {
+  encode(_: MsgUpdateMemberRoleResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgUpdateMemberRoleResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgUpdateMemberRoleResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): MsgUpdateMemberRoleResponse {
+    return {};
+  },
+
+  toJSON(_: MsgUpdateMemberRoleResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgUpdateMemberRoleResponse>, I>>(base?: I): MsgUpdateMemberRoleResponse {
+    return MsgUpdateMemberRoleResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgUpdateMemberRoleResponse>, I>>(_: I): MsgUpdateMemberRoleResponse {
+    const message = createBaseMsgUpdateMemberRoleResponse();
+    return message;
+  },
+};
+
+function createBaseMsgRotateEpoch(): MsgRotateEpoch {
+  return { signer: "", orgId: "" };
+}
+
+export const MsgRotateEpoch: MessageFns<MsgRotateEpoch> = {
+  encode(message: MsgRotateEpoch, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.signer !== "") {
+      writer.uint32(10).string(message.signer);
+    }
+    if (message.orgId !== "") {
+      writer.uint32(18).string(message.orgId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgRotateEpoch {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgRotateEpoch();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.signer = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.orgId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgRotateEpoch {
+    return {
+      signer: isSet(object.signer) ? globalThis.String(object.signer) : "",
+      orgId: isSet(object.orgId)
+        ? globalThis.String(object.orgId)
+        : isSet(object.org_id)
+        ? globalThis.String(object.org_id)
+        : "",
+    };
+  },
+
+  toJSON(message: MsgRotateEpoch): unknown {
+    const obj: any = {};
+    if (message.signer !== "") {
+      obj.signer = message.signer;
+    }
+    if (message.orgId !== "") {
+      obj.orgId = message.orgId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgRotateEpoch>, I>>(base?: I): MsgRotateEpoch {
+    return MsgRotateEpoch.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgRotateEpoch>, I>>(object: I): MsgRotateEpoch {
+    const message = createBaseMsgRotateEpoch();
+    message.signer = object.signer ?? "";
+    message.orgId = object.orgId ?? "";
+    return message;
+  },
+};
+
+function createBaseMsgRotateEpochResponse(): MsgRotateEpochResponse {
+  return { newEpoch: "0" };
+}
+
+export const MsgRotateEpochResponse: MessageFns<MsgRotateEpochResponse> = {
+  encode(message: MsgRotateEpochResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.newEpoch !== "0") {
+      writer.uint32(8).uint64(message.newEpoch);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgRotateEpochResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgRotateEpochResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.newEpoch = reader.uint64().toString();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgRotateEpochResponse {
+    return {
+      newEpoch: isSet(object.newEpoch)
+        ? globalThis.String(object.newEpoch)
+        : isSet(object.new_epoch)
+        ? globalThis.String(object.new_epoch)
+        : "0",
+    };
+  },
+
+  toJSON(message: MsgRotateEpochResponse): unknown {
+    const obj: any = {};
+    if (message.newEpoch !== "0") {
+      obj.newEpoch = message.newEpoch;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgRotateEpochResponse>, I>>(base?: I): MsgRotateEpochResponse {
+    return MsgRotateEpochResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgRotateEpochResponse>, I>>(object: I): MsgRotateEpochResponse {
+    const message = createBaseMsgRotateEpochResponse();
+    message.newEpoch = object.newEpoch ?? "0";
+    return message;
+  },
+};
+
+function createBaseMsgTransferLeadership(): MsgTransferLeadership {
+  return { signer: "", orgId: "", newLeader: "" };
+}
+
+export const MsgTransferLeadership: MessageFns<MsgTransferLeadership> = {
+  encode(message: MsgTransferLeadership, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.signer !== "") {
+      writer.uint32(10).string(message.signer);
+    }
+    if (message.orgId !== "") {
+      writer.uint32(18).string(message.orgId);
+    }
+    if (message.newLeader !== "") {
+      writer.uint32(26).string(message.newLeader);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgTransferLeadership {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgTransferLeadership();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.signer = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.orgId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.newLeader = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgTransferLeadership {
+    return {
+      signer: isSet(object.signer) ? globalThis.String(object.signer) : "",
+      orgId: isSet(object.orgId)
+        ? globalThis.String(object.orgId)
+        : isSet(object.org_id)
+        ? globalThis.String(object.org_id)
+        : "",
+      newLeader: isSet(object.newLeader)
+        ? globalThis.String(object.newLeader)
+        : isSet(object.new_leader)
+        ? globalThis.String(object.new_leader)
+        : "",
+    };
+  },
+
+  toJSON(message: MsgTransferLeadership): unknown {
+    const obj: any = {};
+    if (message.signer !== "") {
+      obj.signer = message.signer;
+    }
+    if (message.orgId !== "") {
+      obj.orgId = message.orgId;
+    }
+    if (message.newLeader !== "") {
+      obj.newLeader = message.newLeader;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgTransferLeadership>, I>>(base?: I): MsgTransferLeadership {
+    return MsgTransferLeadership.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgTransferLeadership>, I>>(object: I): MsgTransferLeadership {
+    const message = createBaseMsgTransferLeadership();
+    message.signer = object.signer ?? "";
+    message.orgId = object.orgId ?? "";
+    message.newLeader = object.newLeader ?? "";
+    return message;
+  },
+};
+
+function createBaseMsgTransferLeadershipResponse(): MsgTransferLeadershipResponse {
+  return {};
+}
+
+export const MsgTransferLeadershipResponse: MessageFns<MsgTransferLeadershipResponse> = {
+  encode(_: MsgTransferLeadershipResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgTransferLeadershipResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgTransferLeadershipResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): MsgTransferLeadershipResponse {
+    return {};
+  },
+
+  toJSON(_: MsgTransferLeadershipResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgTransferLeadershipResponse>, I>>(base?: I): MsgTransferLeadershipResponse {
+    return MsgTransferLeadershipResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgTransferLeadershipResponse>, I>>(_: I): MsgTransferLeadershipResponse {
+    const message = createBaseMsgTransferLeadershipResponse();
+    return message;
+  },
+};
+
+function createBaseMsgCloseOrg(): MsgCloseOrg {
+  return { signer: "", orgId: "" };
+}
+
+export const MsgCloseOrg: MessageFns<MsgCloseOrg> = {
+  encode(message: MsgCloseOrg, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.signer !== "") {
+      writer.uint32(10).string(message.signer);
+    }
+    if (message.orgId !== "") {
+      writer.uint32(18).string(message.orgId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgCloseOrg {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgCloseOrg();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.signer = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.orgId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgCloseOrg {
+    return {
+      signer: isSet(object.signer) ? globalThis.String(object.signer) : "",
+      orgId: isSet(object.orgId)
+        ? globalThis.String(object.orgId)
+        : isSet(object.org_id)
+        ? globalThis.String(object.org_id)
+        : "",
+    };
+  },
+
+  toJSON(message: MsgCloseOrg): unknown {
+    const obj: any = {};
+    if (message.signer !== "") {
+      obj.signer = message.signer;
+    }
+    if (message.orgId !== "") {
+      obj.orgId = message.orgId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgCloseOrg>, I>>(base?: I): MsgCloseOrg {
+    return MsgCloseOrg.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgCloseOrg>, I>>(object: I): MsgCloseOrg {
+    const message = createBaseMsgCloseOrg();
+    message.signer = object.signer ?? "";
+    message.orgId = object.orgId ?? "";
+    return message;
+  },
+};
+
+function createBaseMsgCloseOrgResponse(): MsgCloseOrgResponse {
+  return {};
+}
+
+export const MsgCloseOrgResponse: MessageFns<MsgCloseOrgResponse> = {
+  encode(_: MsgCloseOrgResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgCloseOrgResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgCloseOrgResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): MsgCloseOrgResponse {
+    return {};
+  },
+
+  toJSON(_: MsgCloseOrgResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgCloseOrgResponse>, I>>(base?: I): MsgCloseOrgResponse {
+    return MsgCloseOrgResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgCloseOrgResponse>, I>>(_: I): MsgCloseOrgResponse {
+    const message = createBaseMsgCloseOrgResponse();
     return message;
   },
 };

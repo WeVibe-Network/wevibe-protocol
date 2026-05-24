@@ -36,17 +36,15 @@ export const wevibeMessageRegistryEntries: ReadonlyArray<[string, GeneratedType]
   // Memory
   ['/wevibe.memory.v1.MsgSubmitCommitment',     memoryV1.MsgSubmitCommitment     as unknown as GeneratedType],
   ['/wevibe.memory.v1.MsgApproveMemory',        memoryV1.MsgApproveMemory        as unknown as GeneratedType],
-  ['/wevibe.memory.v1.MsgRejectMemory',         memoryV1.MsgRejectMemory         as unknown as GeneratedType],
-  ['/wevibe.memory.v1.MsgPurgeExpired',         memoryV1.MsgPurgeExpired         as unknown as GeneratedType],
   ['/wevibe.memory.v1.MsgUpdateParams',         memoryV1.MsgUpdateParams         as unknown as GeneratedType],
-  ['/wevibe.memory.v1.MsgRelateMemories',       memoryV1.MsgRelateMemories       as unknown as GeneratedType],
-  ['/wevibe.memory.v1.MsgApproveRelationship',  memoryV1.MsgApproveRelationship  as unknown as GeneratedType],
-  ['/wevibe.memory.v1.MsgSetValidityBounds',    memoryV1.MsgSetValidityBounds    as unknown as GeneratedType],
-  ['/wevibe.memory.v1.MsgArchiveMemory',        memoryV1.MsgArchiveMemory        as unknown as GeneratedType],
   ['/wevibe.memory.v1.MsgReportMemory',         memoryV1.MsgReportMemory         as unknown as GeneratedType],
 
   // Org
   ['/wevibe.org.v1.MsgRegisterOrg',             orgV1.MsgRegisterOrg             as unknown as GeneratedType],
+  ['/wevibe.org.v1.MsgUpdateMemberRole',        orgV1.MsgUpdateMemberRole        as unknown as GeneratedType],
+  ['/wevibe.org.v1.MsgRotateEpoch',             orgV1.MsgRotateEpoch             as unknown as GeneratedType],
+  ['/wevibe.org.v1.MsgTransferLeadership',      orgV1.MsgTransferLeadership      as unknown as GeneratedType],
+  ['/wevibe.org.v1.MsgCloseOrg',                orgV1.MsgCloseOrg                as unknown as GeneratedType],
   ['/wevibe.org.v1.MsgAddMember',               orgV1.MsgAddMember               as unknown as GeneratedType],
   ['/wevibe.org.v1.MsgRemoveMember',            orgV1.MsgRemoveMember            as unknown as GeneratedType],
   ['/wevibe.org.v1.MsgUpdateParams',            orgV1.MsgUpdateParams            as unknown as GeneratedType],
