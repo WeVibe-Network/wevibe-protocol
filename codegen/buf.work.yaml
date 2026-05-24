@@ -1,0 +1,9 @@
+version: v1
+# wevibe-protocol's bindings codegen consumes wevibe-chain/proto as the
+# proto source. The actual buf module config lives in
+# ../wevibe-chain/proto/buf.yaml (with its buf.lock pinning the SDK deps).
+# This buf.work.yaml is informational — codegen/regen.sh invokes buf
+# directly from wevibe-chain/proto with this directory's buf.gen.yaml as
+# the template.
+directories:
+  - ../../wevibe-chain/proto

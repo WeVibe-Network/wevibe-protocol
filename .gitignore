@@ -16,3 +16,7 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+# Node modules from local type-check installs.
+# The generated bindings under js/ ARE tracked — see README.md "JS/TS Bindings Package".
+node_modules/
