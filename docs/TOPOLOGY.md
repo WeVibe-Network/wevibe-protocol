@@ -51,6 +51,64 @@ grpc/serve.proto  ──> wevibe-chain x/serve module adapter
 - Spectral lint output stored in CI logs.
 - Buf lint + breaking-change reports archived per commit.
 
+## Test Vectors
+
+### `test_vectors/relay_envelope_v1.json`
+
+Canonical-body test vectors for the WeVibe relay endpoint, per **Decision 2026-05-24-F**. This file is the spec of truth for the relay envelope canonical-body format. Any implementation of the relay client or server MUST validate against these vectors.
+
+**Format:**
+
+```json
+{
+  "version": "WV-RELAY-v1",
+  "description": "<human-readable description>",
+  "vectors": [
+    {
+      "name": "<vector name>",
+      "inputs": {
+        "org_id": "<value>",
+        "wallet_address": "<value>",
+        "tx_bytes_base64": "<value>"
+      },
+      "canonical_body": "<assembled body, with literal \\n between fields>",
+      "canonical_body_sha256_hex": "<lowercase hex of sha256 over the UTF-8 bytes of canonical_body>"
+    }
+  ]
+}
+```
+
+**Canonical body format (Decision F):**
+
+```
+WV-RELAY-v1\n
+org_id:<value>\n
+wallet_address:<value>\n
+tx_bytes_base64:<value>\n
+```
+
+The `\n` sequences above are literal newline (0x0A) bytes in the encoded body. The SHA-256 is computed over the UTF-8 byte representation of the assembled string.
+
+**Included vectors:**
+
+| Name | Purpose |
+|------|---------|
+| `empty_fields` | All input fields empty — locks in header + separator behavior with no field values. |
+| `ascii_typical` | Typical ASCII-only inputs — the common-path vector. |
+| `unicode_org_label` | Non-ASCII org label — exists specifically to lock in UTF-8 byte-level behavior for unicode org identifiers. |
+
+**Consumers:**
+
+- `wevibe-hub/internal/relay/validator.go` — parses incoming relay bodies in this format and verifies the SHA-256 against the request envelope.
+- `wevibe-dashboard/lib/canonical-body.ts` — builds outgoing relay bodies in this format prior to signing.
+
+Both modules reference `test_vectors/relay_envelope_v1.json` as the authoritative specification. Changes to the canonical-body format require updating this file first, then aligning both consumers.
+
+## Cross-Module Dependencies
+
+- `wevibe-hub/internal/relay/validator.go` parses relay envelope bodies in the `WV-RELAY-v1` canonical format defined by `test_vectors/relay_envelope_v1.json`.
+- `wevibe-dashboard/lib/canonical-body.ts` builds relay envelope bodies in the `WV-RELAY-v1` canonical format defined by `test_vectors/relay_envelope_v1.json`.
+
 ## Sprint 24 Notes
 
 - Added hub moderation vote and org config endpoints to `openapi/wevibe-hub.yaml`, alongside expanded report schemas reflecting Accept / Deny / Report lifecycle.

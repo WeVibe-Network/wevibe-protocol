@@ -1,0 +1,36 @@
+{
+  "version": "WV-RELAY-v1",
+  "description": "Canonical body test vectors for the WeVibe relay endpoint. Per Decision 2026-05-24-F.",
+  "vectors": [
+    {
+      "name": "empty_fields",
+      "inputs": {
+        "org_id": "",
+        "wallet_address": "",
+        "tx_bytes_base64": ""
+      },
+      "canonical_body": "WV-RELAY-v1\norg_id:\nwallet_address:\ntx_bytes_base64:\n",
+      "canonical_body_sha256_hex": "92ddea3ed78861ec3b09e479febea53943ff97ae6c62db984a6ad9eb5fe9dbcb"
+    },
+    {
+      "name": "ascii_typical",
+      "inputs": {
+        "org_id": "org_01HXKZ8N4VQZAYP7QH7SXG8E2K",
+        "wallet_address": "wevibe1qx7r3f5e6gqvjf0lzthtxsk6lnssr8r3qzlk7h",
+        "tx_bytes_base64": "CpsBCpgBCh4vY29zbW9zLmF1dGh6LnYxYmV0YTEuTXNnRXhlYxJ2Ci1jb3Ntb3MxZ3JhbnRlcjU4Y2lvOTkwOTk5OTlleHByZXNzaW9ucXFxcXEScQpOLy93ZXZpYmUubWVtb3J5LnYxLk1zZ1N1Ym1pdENvbW1pdG1lbnQSHwoJc2lnbmVyMTIzEglyb290XzAxMjMaB2NvbW1pdGE="
+      },
+      "canonical_body": "WV-RELAY-v1\norg_id:org_01HXKZ8N4VQZAYP7QH7SXG8E2K\nwallet_address:wevibe1qx7r3f5e6gqvjf0lzthtxsk6lnssr8r3qzlk7h\ntx_bytes_base64:CpsBCpgBCh4vY29zbW9zLmF1dGh6LnYxYmV0YTEuTXNnRXhlYxJ2Ci1jb3Ntb3MxZ3JhbnRlcjU4Y2lvOTkwOTk5OTlleHByZXNzaW9ucXFxcXEScQpOLy93ZXZpYmUubWVtb3J5LnYxLk1zZ1N1Ym1pdENvbW1pdG1lbnQSHwoJc2lnbmVyMTIzEglyb290XzAxMjMaB2NvbW1pdGE=\n",
+      "canonical_body_sha256_hex": "7e4f27cb464fc8b8eeb81faa8907aae5b761b1aad073285be3243274f72ae1dd"
+    },
+    {
+      "name": "unicode_org_label",
+      "inputs": {
+        "org_id": "org_with_unicode_\u540d\u524d_\ud83c\udfaf",
+        "wallet_address": "wevibe1abc...xyz",
+        "tx_bytes_base64": "CgEA"
+      },
+      "canonical_body": "WV-RELAY-v1\norg_id:org_with_unicode_\u540d\u524d_\ud83c\udfaf\nwallet_address:wevibe1abc...xyz\ntx_bytes_base64:CgEA\n",
+      "canonical_body_sha256_hex": "83282c1fbff50e6049b54c1943c31f87f53242e7db8556804ed3b5659fa6d93d"
+    }
+  ]
+}
