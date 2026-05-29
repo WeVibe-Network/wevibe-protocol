@@ -29,10 +29,13 @@ export interface MsgApproveMemory {
   orgId: string;
   contentHash: Uint8Array;
   encryptedBlob: Uint8Array;
-  approvers: string[];
   committingLeader: string;
   wrappedDekEnc: Uint8Array;
   memoryType: MemoryType;
+  plaintextHash: Uint8Array;
+  salt: Uint8Array;
+  ciphertextHash: Uint8Array;
+  contributorSig: Uint8Array;
 }
 
 export interface MsgApproveMemoryResponse {
@@ -300,10 +303,13 @@ function createBaseMsgApproveMemory(): MsgApproveMemory {
     orgId: "",
     contentHash: new Uint8Array(0),
     encryptedBlob: new Uint8Array(0),
-    approvers: [],
     committingLeader: "",
     wrappedDekEnc: new Uint8Array(0),
     memoryType: 0,
+    plaintextHash: new Uint8Array(0),
+    salt: new Uint8Array(0),
+    ciphertextHash: new Uint8Array(0),
+    contributorSig: new Uint8Array(0),
   };
 }
 
@@ -321,9 +327,6 @@ export const MsgApproveMemory: MessageFns<MsgApproveMemory> = {
     if (message.encryptedBlob.length !== 0) {
       writer.uint32(34).bytes(message.encryptedBlob);
     }
-    for (const v of message.approvers) {
-      writer.uint32(42).string(v!);
-    }
     if (message.committingLeader !== "") {
       writer.uint32(50).string(message.committingLeader);
     }
@@ -332,6 +335,18 @@ export const MsgApproveMemory: MessageFns<MsgApproveMemory> = {
     }
     if (message.memoryType !== 0) {
       writer.uint32(64).int32(message.memoryType);
+    }
+    if (message.plaintextHash.length !== 0) {
+      writer.uint32(74).bytes(message.plaintextHash);
+    }
+    if (message.salt.length !== 0) {
+      writer.uint32(82).bytes(message.salt);
+    }
+    if (message.ciphertextHash.length !== 0) {
+      writer.uint32(90).bytes(message.ciphertextHash);
+    }
+    if (message.contributorSig.length !== 0) {
+      writer.uint32(98).bytes(message.contributorSig);
     }
     return writer;
   },
@@ -375,14 +390,6 @@ export const MsgApproveMemory: MessageFns<MsgApproveMemory> = {
           message.encryptedBlob = reader.bytes();
           continue;
         }
-        case 5: {
-          if (tag !== 42) {
-            break;
-          }
-
-          message.approvers.push(reader.string());
-          continue;
-        }
         case 6: {
           if (tag !== 50) {
             break;
@@ -405,6 +412,38 @@ export const MsgApproveMemory: MessageFns<MsgApproveMemory> = {
           }
 
           message.memoryType = reader.int32() as any;
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.plaintextHash = reader.bytes();
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.salt = reader.bytes();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.ciphertextHash = reader.bytes();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.contributorSig = reader.bytes();
           continue;
         }
       }
@@ -434,9 +473,6 @@ export const MsgApproveMemory: MessageFns<MsgApproveMemory> = {
         : isSet(object.encrypted_blob)
         ? bytesFromBase64(object.encrypted_blob)
         : new Uint8Array(0),
-      approvers: globalThis.Array.isArray(object?.approvers)
-        ? object.approvers.map((e: any) => globalThis.String(e))
-        : [],
       committingLeader: isSet(object.committingLeader)
         ? globalThis.String(object.committingLeader)
         : isSet(object.committing_leader)
@@ -452,6 +488,22 @@ export const MsgApproveMemory: MessageFns<MsgApproveMemory> = {
         : isSet(object.memory_type)
         ? memoryTypeFromJSON(object.memory_type)
         : 0,
+      plaintextHash: isSet(object.plaintextHash)
+        ? bytesFromBase64(object.plaintextHash)
+        : isSet(object.plaintext_hash)
+        ? bytesFromBase64(object.plaintext_hash)
+        : new Uint8Array(0),
+      salt: isSet(object.salt) ? bytesFromBase64(object.salt) : new Uint8Array(0),
+      ciphertextHash: isSet(object.ciphertextHash)
+        ? bytesFromBase64(object.ciphertextHash)
+        : isSet(object.ciphertext_hash)
+        ? bytesFromBase64(object.ciphertext_hash)
+        : new Uint8Array(0),
+      contributorSig: isSet(object.contributorSig)
+        ? bytesFromBase64(object.contributorSig)
+        : isSet(object.contributor_sig)
+        ? bytesFromBase64(object.contributor_sig)
+        : new Uint8Array(0),
     };
   },
 
@@ -469,9 +521,6 @@ export const MsgApproveMemory: MessageFns<MsgApproveMemory> = {
     if (message.encryptedBlob.length !== 0) {
       obj.encryptedBlob = base64FromBytes(message.encryptedBlob);
     }
-    if (message.approvers?.length) {
-      obj.approvers = message.approvers;
-    }
     if (message.committingLeader !== "") {
       obj.committingLeader = message.committingLeader;
     }
@@ -480,6 +529,18 @@ export const MsgApproveMemory: MessageFns<MsgApproveMemory> = {
     }
     if (message.memoryType !== 0) {
       obj.memoryType = memoryTypeToJSON(message.memoryType);
+    }
+    if (message.plaintextHash.length !== 0) {
+      obj.plaintextHash = base64FromBytes(message.plaintextHash);
+    }
+    if (message.salt.length !== 0) {
+      obj.salt = base64FromBytes(message.salt);
+    }
+    if (message.ciphertextHash.length !== 0) {
+      obj.ciphertextHash = base64FromBytes(message.ciphertextHash);
+    }
+    if (message.contributorSig.length !== 0) {
+      obj.contributorSig = base64FromBytes(message.contributorSig);
     }
     return obj;
   },
@@ -493,10 +554,13 @@ export const MsgApproveMemory: MessageFns<MsgApproveMemory> = {
     message.orgId = object.orgId ?? "";
     message.contentHash = object.contentHash ?? new Uint8Array(0);
     message.encryptedBlob = object.encryptedBlob ?? new Uint8Array(0);
-    message.approvers = object.approvers?.map((e) => e) || [];
     message.committingLeader = object.committingLeader ?? "";
     message.wrappedDekEnc = object.wrappedDekEnc ?? new Uint8Array(0);
     message.memoryType = object.memoryType ?? 0;
+    message.plaintextHash = object.plaintextHash ?? new Uint8Array(0);
+    message.salt = object.salt ?? new Uint8Array(0);
+    message.ciphertextHash = object.ciphertextHash ?? new Uint8Array(0);
+    message.contributorSig = object.contributorSig ?? new Uint8Array(0);
     return message;
   },
 };

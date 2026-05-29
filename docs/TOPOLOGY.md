@@ -27,6 +27,13 @@ grpc/serve.proto  ──> wevibe-chain x/serve module adapter
 5. Python models emitted to `dist/python/`.
 6. Redoc HTML produced in `dist/docs/`.
 
+## Sprint 32 — CO-033b JS Binding Regen
+
+- `npm run regen` regenerates proto-derived bindings under `js/wevibe/` from `wevibe-chain/proto/*`.
+- `js/wevibe/serve/v1/tx.ts` now includes `ServeEntry.matchedKeywords: string[]` (proto field 8 `matched_keywords`).
+- Hand-authored files `js/index.ts` and `js/registry.ts` remain outside the regen wipe scope and are preserved.
+- Dashboard and MCP consumers compile against the regenerated field contract for serve submission.
+
 ## Consum ers
 
 - **wevibe-mcp** → uses TypeScript client for hub interactions.

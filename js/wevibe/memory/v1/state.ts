@@ -193,13 +193,20 @@ export interface StoredMemoryCommitment {
   contributorPubkey: string;
   epoch: string;
   committedAtHeight: string;
-  approvers: string[];
   committingLeaderPubkey: string;
   state: MemoryState;
   lastActiveEpoch: string;
   wrappedDekEnc: Uint8Array;
   memoryType: MemoryType;
   approvedAtEpoch: string;
+  plaintextHash: Uint8Array;
+  salt: Uint8Array;
+  ciphertextHash: Uint8Array;
+  wrappedDekHash: Uint8Array;
+  contributorSig: Uint8Array;
+  serveCountTotal: string;
+  denialCountTotal: string;
+  archivedEpoch: string;
 }
 
 export interface StoredMemoryRelationship {
@@ -561,13 +568,20 @@ function createBaseStoredMemoryCommitment(): StoredMemoryCommitment {
     contributorPubkey: "",
     epoch: "0",
     committedAtHeight: "0",
-    approvers: [],
     committingLeaderPubkey: "",
     state: 0,
     lastActiveEpoch: "0",
     wrappedDekEnc: new Uint8Array(0),
     memoryType: 0,
     approvedAtEpoch: "0",
+    plaintextHash: new Uint8Array(0),
+    salt: new Uint8Array(0),
+    ciphertextHash: new Uint8Array(0),
+    wrappedDekHash: new Uint8Array(0),
+    contributorSig: new Uint8Array(0),
+    serveCountTotal: "0",
+    denialCountTotal: "0",
+    archivedEpoch: "0",
   };
 }
 
@@ -594,9 +608,6 @@ export const StoredMemoryCommitment: MessageFns<StoredMemoryCommitment> = {
     if (message.committedAtHeight !== "0") {
       writer.uint32(56).uint64(message.committedAtHeight);
     }
-    for (const v of message.approvers) {
-      writer.uint32(66).string(v!);
-    }
     if (message.committingLeaderPubkey !== "") {
       writer.uint32(74).string(message.committingLeaderPubkey);
     }
@@ -614,6 +625,30 @@ export const StoredMemoryCommitment: MessageFns<StoredMemoryCommitment> = {
     }
     if (message.approvedAtEpoch !== "0") {
       writer.uint32(112).uint64(message.approvedAtEpoch);
+    }
+    if (message.plaintextHash.length !== 0) {
+      writer.uint32(122).bytes(message.plaintextHash);
+    }
+    if (message.salt.length !== 0) {
+      writer.uint32(130).bytes(message.salt);
+    }
+    if (message.ciphertextHash.length !== 0) {
+      writer.uint32(138).bytes(message.ciphertextHash);
+    }
+    if (message.wrappedDekHash.length !== 0) {
+      writer.uint32(146).bytes(message.wrappedDekHash);
+    }
+    if (message.contributorSig.length !== 0) {
+      writer.uint32(154).bytes(message.contributorSig);
+    }
+    if (message.serveCountTotal !== "0") {
+      writer.uint32(160).uint64(message.serveCountTotal);
+    }
+    if (message.denialCountTotal !== "0") {
+      writer.uint32(168).uint64(message.denialCountTotal);
+    }
+    if (message.archivedEpoch !== "0") {
+      writer.uint32(176).uint64(message.archivedEpoch);
     }
     return writer;
   },
@@ -681,14 +716,6 @@ export const StoredMemoryCommitment: MessageFns<StoredMemoryCommitment> = {
           message.committedAtHeight = reader.uint64().toString();
           continue;
         }
-        case 8: {
-          if (tag !== 66) {
-            break;
-          }
-
-          message.approvers.push(reader.string());
-          continue;
-        }
         case 9: {
           if (tag !== 74) {
             break;
@@ -737,6 +764,70 @@ export const StoredMemoryCommitment: MessageFns<StoredMemoryCommitment> = {
           message.approvedAtEpoch = reader.uint64().toString();
           continue;
         }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.plaintextHash = reader.bytes();
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.salt = reader.bytes();
+          continue;
+        }
+        case 17: {
+          if (tag !== 138) {
+            break;
+          }
+
+          message.ciphertextHash = reader.bytes();
+          continue;
+        }
+        case 18: {
+          if (tag !== 146) {
+            break;
+          }
+
+          message.wrappedDekHash = reader.bytes();
+          continue;
+        }
+        case 19: {
+          if (tag !== 154) {
+            break;
+          }
+
+          message.contributorSig = reader.bytes();
+          continue;
+        }
+        case 20: {
+          if (tag !== 160) {
+            break;
+          }
+
+          message.serveCountTotal = reader.uint64().toString();
+          continue;
+        }
+        case 21: {
+          if (tag !== 168) {
+            break;
+          }
+
+          message.denialCountTotal = reader.uint64().toString();
+          continue;
+        }
+        case 22: {
+          if (tag !== 176) {
+            break;
+          }
+
+          message.archivedEpoch = reader.uint64().toString();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -777,9 +868,6 @@ export const StoredMemoryCommitment: MessageFns<StoredMemoryCommitment> = {
         : isSet(object.committed_at_height)
         ? globalThis.String(object.committed_at_height)
         : "0",
-      approvers: globalThis.Array.isArray(object?.approvers)
-        ? object.approvers.map((e: any) => globalThis.String(e))
-        : [],
       committingLeaderPubkey: isSet(object.committingLeaderPubkey)
         ? globalThis.String(object.committingLeaderPubkey)
         : isSet(object.committing_leader_pubkey)
@@ -805,6 +893,42 @@ export const StoredMemoryCommitment: MessageFns<StoredMemoryCommitment> = {
         ? globalThis.String(object.approvedAtEpoch)
         : isSet(object.approved_at_epoch)
         ? globalThis.String(object.approved_at_epoch)
+        : "0",
+      plaintextHash: isSet(object.plaintextHash)
+        ? bytesFromBase64(object.plaintextHash)
+        : isSet(object.plaintext_hash)
+        ? bytesFromBase64(object.plaintext_hash)
+        : new Uint8Array(0),
+      salt: isSet(object.salt) ? bytesFromBase64(object.salt) : new Uint8Array(0),
+      ciphertextHash: isSet(object.ciphertextHash)
+        ? bytesFromBase64(object.ciphertextHash)
+        : isSet(object.ciphertext_hash)
+        ? bytesFromBase64(object.ciphertext_hash)
+        : new Uint8Array(0),
+      wrappedDekHash: isSet(object.wrappedDekHash)
+        ? bytesFromBase64(object.wrappedDekHash)
+        : isSet(object.wrapped_dek_hash)
+        ? bytesFromBase64(object.wrapped_dek_hash)
+        : new Uint8Array(0),
+      contributorSig: isSet(object.contributorSig)
+        ? bytesFromBase64(object.contributorSig)
+        : isSet(object.contributor_sig)
+        ? bytesFromBase64(object.contributor_sig)
+        : new Uint8Array(0),
+      serveCountTotal: isSet(object.serveCountTotal)
+        ? globalThis.String(object.serveCountTotal)
+        : isSet(object.serve_count_total)
+        ? globalThis.String(object.serve_count_total)
+        : "0",
+      denialCountTotal: isSet(object.denialCountTotal)
+        ? globalThis.String(object.denialCountTotal)
+        : isSet(object.denial_count_total)
+        ? globalThis.String(object.denial_count_total)
+        : "0",
+      archivedEpoch: isSet(object.archivedEpoch)
+        ? globalThis.String(object.archivedEpoch)
+        : isSet(object.archived_epoch)
+        ? globalThis.String(object.archived_epoch)
         : "0",
     };
   },
@@ -832,9 +956,6 @@ export const StoredMemoryCommitment: MessageFns<StoredMemoryCommitment> = {
     if (message.committedAtHeight !== "0") {
       obj.committedAtHeight = message.committedAtHeight;
     }
-    if (message.approvers?.length) {
-      obj.approvers = message.approvers;
-    }
     if (message.committingLeaderPubkey !== "") {
       obj.committingLeaderPubkey = message.committingLeaderPubkey;
     }
@@ -853,6 +974,30 @@ export const StoredMemoryCommitment: MessageFns<StoredMemoryCommitment> = {
     if (message.approvedAtEpoch !== "0") {
       obj.approvedAtEpoch = message.approvedAtEpoch;
     }
+    if (message.plaintextHash.length !== 0) {
+      obj.plaintextHash = base64FromBytes(message.plaintextHash);
+    }
+    if (message.salt.length !== 0) {
+      obj.salt = base64FromBytes(message.salt);
+    }
+    if (message.ciphertextHash.length !== 0) {
+      obj.ciphertextHash = base64FromBytes(message.ciphertextHash);
+    }
+    if (message.wrappedDekHash.length !== 0) {
+      obj.wrappedDekHash = base64FromBytes(message.wrappedDekHash);
+    }
+    if (message.contributorSig.length !== 0) {
+      obj.contributorSig = base64FromBytes(message.contributorSig);
+    }
+    if (message.serveCountTotal !== "0") {
+      obj.serveCountTotal = message.serveCountTotal;
+    }
+    if (message.denialCountTotal !== "0") {
+      obj.denialCountTotal = message.denialCountTotal;
+    }
+    if (message.archivedEpoch !== "0") {
+      obj.archivedEpoch = message.archivedEpoch;
+    }
     return obj;
   },
 
@@ -868,13 +1013,20 @@ export const StoredMemoryCommitment: MessageFns<StoredMemoryCommitment> = {
     message.contributorPubkey = object.contributorPubkey ?? "";
     message.epoch = object.epoch ?? "0";
     message.committedAtHeight = object.committedAtHeight ?? "0";
-    message.approvers = object.approvers?.map((e) => e) || [];
     message.committingLeaderPubkey = object.committingLeaderPubkey ?? "";
     message.state = object.state ?? 0;
     message.lastActiveEpoch = object.lastActiveEpoch ?? "0";
     message.wrappedDekEnc = object.wrappedDekEnc ?? new Uint8Array(0);
     message.memoryType = object.memoryType ?? 0;
     message.approvedAtEpoch = object.approvedAtEpoch ?? "0";
+    message.plaintextHash = object.plaintextHash ?? new Uint8Array(0);
+    message.salt = object.salt ?? new Uint8Array(0);
+    message.ciphertextHash = object.ciphertextHash ?? new Uint8Array(0);
+    message.wrappedDekHash = object.wrappedDekHash ?? new Uint8Array(0);
+    message.contributorSig = object.contributorSig ?? new Uint8Array(0);
+    message.serveCountTotal = object.serveCountTotal ?? "0";
+    message.denialCountTotal = object.denialCountTotal ?? "0";
+    message.archivedEpoch = object.archivedEpoch ?? "0";
     return message;
   },
 };

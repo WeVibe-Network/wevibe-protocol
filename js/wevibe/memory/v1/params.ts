@@ -14,14 +14,19 @@ export interface Params {
   pendingRetentionEpochs: string;
   maxBlobSizeBytes: string;
   maxKeywordsPerMemory: number;
-  minRetrievalDecayBps: string;
+  retrievalThresholdBps: string;
   initialConfidenceBps: string;
   contestWindowEpochs: string;
-  idleDecayRateBps: string;
-  denialDecayBps: string;
-  serveBoostBps: string;
-  maxServeBoostPerEpoch: string;
-  bootstrapGraceEpochs: string;
+  graceEpochs: string;
+  serveDBps: string;
+  denialDBps: string;
+  idleDBps: string;
+  serveFloorBps: string;
+  denialFloorBps: string;
+  idleProtectBps: string;
+  idleUntrustedBps: string;
+  trustMinServes: string;
+  trustMaxRateBps: string;
 }
 
 function createBaseParams(): Params {
@@ -30,14 +35,19 @@ function createBaseParams(): Params {
     pendingRetentionEpochs: "0",
     maxBlobSizeBytes: "0",
     maxKeywordsPerMemory: 0,
-    minRetrievalDecayBps: "0",
+    retrievalThresholdBps: "0",
     initialConfidenceBps: "0",
     contestWindowEpochs: "0",
-    idleDecayRateBps: "0",
-    denialDecayBps: "0",
-    serveBoostBps: "0",
-    maxServeBoostPerEpoch: "0",
-    bootstrapGraceEpochs: "0",
+    graceEpochs: "0",
+    serveDBps: "0",
+    denialDBps: "0",
+    idleDBps: "0",
+    serveFloorBps: "0",
+    denialFloorBps: "0",
+    idleProtectBps: "0",
+    idleUntrustedBps: "0",
+    trustMinServes: "0",
+    trustMaxRateBps: "0",
   };
 }
 
@@ -55,8 +65,8 @@ export const Params: MessageFns<Params> = {
     if (message.maxKeywordsPerMemory !== 0) {
       writer.uint32(32).uint32(message.maxKeywordsPerMemory);
     }
-    if (message.minRetrievalDecayBps !== "0") {
-      writer.uint32(40).uint64(message.minRetrievalDecayBps);
+    if (message.retrievalThresholdBps !== "0") {
+      writer.uint32(40).uint64(message.retrievalThresholdBps);
     }
     if (message.initialConfidenceBps !== "0") {
       writer.uint32(72).uint64(message.initialConfidenceBps);
@@ -64,20 +74,35 @@ export const Params: MessageFns<Params> = {
     if (message.contestWindowEpochs !== "0") {
       writer.uint32(80).uint64(message.contestWindowEpochs);
     }
-    if (message.idleDecayRateBps !== "0") {
-      writer.uint32(88).uint64(message.idleDecayRateBps);
+    if (message.graceEpochs !== "0") {
+      writer.uint32(120).uint64(message.graceEpochs);
     }
-    if (message.denialDecayBps !== "0") {
-      writer.uint32(96).uint64(message.denialDecayBps);
+    if (message.serveDBps !== "0") {
+      writer.uint32(128).uint64(message.serveDBps);
     }
-    if (message.serveBoostBps !== "0") {
-      writer.uint32(104).uint64(message.serveBoostBps);
+    if (message.denialDBps !== "0") {
+      writer.uint32(136).uint64(message.denialDBps);
     }
-    if (message.maxServeBoostPerEpoch !== "0") {
-      writer.uint32(112).uint64(message.maxServeBoostPerEpoch);
+    if (message.idleDBps !== "0") {
+      writer.uint32(144).uint64(message.idleDBps);
     }
-    if (message.bootstrapGraceEpochs !== "0") {
-      writer.uint32(120).uint64(message.bootstrapGraceEpochs);
+    if (message.serveFloorBps !== "0") {
+      writer.uint32(152).uint64(message.serveFloorBps);
+    }
+    if (message.denialFloorBps !== "0") {
+      writer.uint32(160).uint64(message.denialFloorBps);
+    }
+    if (message.idleProtectBps !== "0") {
+      writer.uint32(168).uint64(message.idleProtectBps);
+    }
+    if (message.idleUntrustedBps !== "0") {
+      writer.uint32(176).uint64(message.idleUntrustedBps);
+    }
+    if (message.trustMinServes !== "0") {
+      writer.uint32(184).uint64(message.trustMinServes);
+    }
+    if (message.trustMaxRateBps !== "0") {
+      writer.uint32(192).uint64(message.trustMaxRateBps);
     }
     return writer;
   },
@@ -126,7 +151,7 @@ export const Params: MessageFns<Params> = {
             break;
           }
 
-          message.minRetrievalDecayBps = reader.uint64().toString();
+          message.retrievalThresholdBps = reader.uint64().toString();
           continue;
         }
         case 9: {
@@ -145,44 +170,84 @@ export const Params: MessageFns<Params> = {
           message.contestWindowEpochs = reader.uint64().toString();
           continue;
         }
-        case 11: {
-          if (tag !== 88) {
-            break;
-          }
-
-          message.idleDecayRateBps = reader.uint64().toString();
-          continue;
-        }
-        case 12: {
-          if (tag !== 96) {
-            break;
-          }
-
-          message.denialDecayBps = reader.uint64().toString();
-          continue;
-        }
-        case 13: {
-          if (tag !== 104) {
-            break;
-          }
-
-          message.serveBoostBps = reader.uint64().toString();
-          continue;
-        }
-        case 14: {
-          if (tag !== 112) {
-            break;
-          }
-
-          message.maxServeBoostPerEpoch = reader.uint64().toString();
-          continue;
-        }
         case 15: {
           if (tag !== 120) {
             break;
           }
 
-          message.bootstrapGraceEpochs = reader.uint64().toString();
+          message.graceEpochs = reader.uint64().toString();
+          continue;
+        }
+        case 16: {
+          if (tag !== 128) {
+            break;
+          }
+
+          message.serveDBps = reader.uint64().toString();
+          continue;
+        }
+        case 17: {
+          if (tag !== 136) {
+            break;
+          }
+
+          message.denialDBps = reader.uint64().toString();
+          continue;
+        }
+        case 18: {
+          if (tag !== 144) {
+            break;
+          }
+
+          message.idleDBps = reader.uint64().toString();
+          continue;
+        }
+        case 19: {
+          if (tag !== 152) {
+            break;
+          }
+
+          message.serveFloorBps = reader.uint64().toString();
+          continue;
+        }
+        case 20: {
+          if (tag !== 160) {
+            break;
+          }
+
+          message.denialFloorBps = reader.uint64().toString();
+          continue;
+        }
+        case 21: {
+          if (tag !== 168) {
+            break;
+          }
+
+          message.idleProtectBps = reader.uint64().toString();
+          continue;
+        }
+        case 22: {
+          if (tag !== 176) {
+            break;
+          }
+
+          message.idleUntrustedBps = reader.uint64().toString();
+          continue;
+        }
+        case 23: {
+          if (tag !== 184) {
+            break;
+          }
+
+          message.trustMinServes = reader.uint64().toString();
+          continue;
+        }
+        case 24: {
+          if (tag !== 192) {
+            break;
+          }
+
+          message.trustMaxRateBps = reader.uint64().toString();
           continue;
         }
       }
@@ -216,10 +281,10 @@ export const Params: MessageFns<Params> = {
         : isSet(object.max_keywords_per_memory)
         ? globalThis.Number(object.max_keywords_per_memory)
         : 0,
-      minRetrievalDecayBps: isSet(object.minRetrievalDecayBps)
-        ? globalThis.String(object.minRetrievalDecayBps)
-        : isSet(object.min_retrieval_decay_bps)
-        ? globalThis.String(object.min_retrieval_decay_bps)
+      retrievalThresholdBps: isSet(object.retrievalThresholdBps)
+        ? globalThis.String(object.retrievalThresholdBps)
+        : isSet(object.retrieval_threshold_bps)
+        ? globalThis.String(object.retrieval_threshold_bps)
         : "0",
       initialConfidenceBps: isSet(object.initialConfidenceBps)
         ? globalThis.String(object.initialConfidenceBps)
@@ -231,30 +296,55 @@ export const Params: MessageFns<Params> = {
         : isSet(object.contest_window_epochs)
         ? globalThis.String(object.contest_window_epochs)
         : "0",
-      idleDecayRateBps: isSet(object.idleDecayRateBps)
-        ? globalThis.String(object.idleDecayRateBps)
-        : isSet(object.idle_decay_rate_bps)
-        ? globalThis.String(object.idle_decay_rate_bps)
+      graceEpochs: isSet(object.graceEpochs)
+        ? globalThis.String(object.graceEpochs)
+        : isSet(object.grace_epochs)
+        ? globalThis.String(object.grace_epochs)
         : "0",
-      denialDecayBps: isSet(object.denialDecayBps)
-        ? globalThis.String(object.denialDecayBps)
-        : isSet(object.denial_decay_bps)
-        ? globalThis.String(object.denial_decay_bps)
+      serveDBps: isSet(object.serveDBps)
+        ? globalThis.String(object.serveDBps)
+        : isSet(object.serve_d_bps)
+        ? globalThis.String(object.serve_d_bps)
         : "0",
-      serveBoostBps: isSet(object.serveBoostBps)
-        ? globalThis.String(object.serveBoostBps)
-        : isSet(object.serve_boost_bps)
-        ? globalThis.String(object.serve_boost_bps)
+      denialDBps: isSet(object.denialDBps)
+        ? globalThis.String(object.denialDBps)
+        : isSet(object.denial_d_bps)
+        ? globalThis.String(object.denial_d_bps)
         : "0",
-      maxServeBoostPerEpoch: isSet(object.maxServeBoostPerEpoch)
-        ? globalThis.String(object.maxServeBoostPerEpoch)
-        : isSet(object.max_serve_boost_per_epoch)
-        ? globalThis.String(object.max_serve_boost_per_epoch)
+      idleDBps: isSet(object.idleDBps)
+        ? globalThis.String(object.idleDBps)
+        : isSet(object.idle_d_bps)
+        ? globalThis.String(object.idle_d_bps)
         : "0",
-      bootstrapGraceEpochs: isSet(object.bootstrapGraceEpochs)
-        ? globalThis.String(object.bootstrapGraceEpochs)
-        : isSet(object.bootstrap_grace_epochs)
-        ? globalThis.String(object.bootstrap_grace_epochs)
+      serveFloorBps: isSet(object.serveFloorBps)
+        ? globalThis.String(object.serveFloorBps)
+        : isSet(object.serve_floor_bps)
+        ? globalThis.String(object.serve_floor_bps)
+        : "0",
+      denialFloorBps: isSet(object.denialFloorBps)
+        ? globalThis.String(object.denialFloorBps)
+        : isSet(object.denial_floor_bps)
+        ? globalThis.String(object.denial_floor_bps)
+        : "0",
+      idleProtectBps: isSet(object.idleProtectBps)
+        ? globalThis.String(object.idleProtectBps)
+        : isSet(object.idle_protect_bps)
+        ? globalThis.String(object.idle_protect_bps)
+        : "0",
+      idleUntrustedBps: isSet(object.idleUntrustedBps)
+        ? globalThis.String(object.idleUntrustedBps)
+        : isSet(object.idle_untrusted_bps)
+        ? globalThis.String(object.idle_untrusted_bps)
+        : "0",
+      trustMinServes: isSet(object.trustMinServes)
+        ? globalThis.String(object.trustMinServes)
+        : isSet(object.trust_min_serves)
+        ? globalThis.String(object.trust_min_serves)
+        : "0",
+      trustMaxRateBps: isSet(object.trustMaxRateBps)
+        ? globalThis.String(object.trustMaxRateBps)
+        : isSet(object.trust_max_rate_bps)
+        ? globalThis.String(object.trust_max_rate_bps)
         : "0",
     };
   },
@@ -273,8 +363,8 @@ export const Params: MessageFns<Params> = {
     if (message.maxKeywordsPerMemory !== 0) {
       obj.maxKeywordsPerMemory = Math.round(message.maxKeywordsPerMemory);
     }
-    if (message.minRetrievalDecayBps !== "0") {
-      obj.minRetrievalDecayBps = message.minRetrievalDecayBps;
+    if (message.retrievalThresholdBps !== "0") {
+      obj.retrievalThresholdBps = message.retrievalThresholdBps;
     }
     if (message.initialConfidenceBps !== "0") {
       obj.initialConfidenceBps = message.initialConfidenceBps;
@@ -282,20 +372,35 @@ export const Params: MessageFns<Params> = {
     if (message.contestWindowEpochs !== "0") {
       obj.contestWindowEpochs = message.contestWindowEpochs;
     }
-    if (message.idleDecayRateBps !== "0") {
-      obj.idleDecayRateBps = message.idleDecayRateBps;
+    if (message.graceEpochs !== "0") {
+      obj.graceEpochs = message.graceEpochs;
     }
-    if (message.denialDecayBps !== "0") {
-      obj.denialDecayBps = message.denialDecayBps;
+    if (message.serveDBps !== "0") {
+      obj.serveDBps = message.serveDBps;
     }
-    if (message.serveBoostBps !== "0") {
-      obj.serveBoostBps = message.serveBoostBps;
+    if (message.denialDBps !== "0") {
+      obj.denialDBps = message.denialDBps;
     }
-    if (message.maxServeBoostPerEpoch !== "0") {
-      obj.maxServeBoostPerEpoch = message.maxServeBoostPerEpoch;
+    if (message.idleDBps !== "0") {
+      obj.idleDBps = message.idleDBps;
     }
-    if (message.bootstrapGraceEpochs !== "0") {
-      obj.bootstrapGraceEpochs = message.bootstrapGraceEpochs;
+    if (message.serveFloorBps !== "0") {
+      obj.serveFloorBps = message.serveFloorBps;
+    }
+    if (message.denialFloorBps !== "0") {
+      obj.denialFloorBps = message.denialFloorBps;
+    }
+    if (message.idleProtectBps !== "0") {
+      obj.idleProtectBps = message.idleProtectBps;
+    }
+    if (message.idleUntrustedBps !== "0") {
+      obj.idleUntrustedBps = message.idleUntrustedBps;
+    }
+    if (message.trustMinServes !== "0") {
+      obj.trustMinServes = message.trustMinServes;
+    }
+    if (message.trustMaxRateBps !== "0") {
+      obj.trustMaxRateBps = message.trustMaxRateBps;
     }
     return obj;
   },
@@ -309,14 +414,19 @@ export const Params: MessageFns<Params> = {
     message.pendingRetentionEpochs = object.pendingRetentionEpochs ?? "0";
     message.maxBlobSizeBytes = object.maxBlobSizeBytes ?? "0";
     message.maxKeywordsPerMemory = object.maxKeywordsPerMemory ?? 0;
-    message.minRetrievalDecayBps = object.minRetrievalDecayBps ?? "0";
+    message.retrievalThresholdBps = object.retrievalThresholdBps ?? "0";
     message.initialConfidenceBps = object.initialConfidenceBps ?? "0";
     message.contestWindowEpochs = object.contestWindowEpochs ?? "0";
-    message.idleDecayRateBps = object.idleDecayRateBps ?? "0";
-    message.denialDecayBps = object.denialDecayBps ?? "0";
-    message.serveBoostBps = object.serveBoostBps ?? "0";
-    message.maxServeBoostPerEpoch = object.maxServeBoostPerEpoch ?? "0";
-    message.bootstrapGraceEpochs = object.bootstrapGraceEpochs ?? "0";
+    message.graceEpochs = object.graceEpochs ?? "0";
+    message.serveDBps = object.serveDBps ?? "0";
+    message.denialDBps = object.denialDBps ?? "0";
+    message.idleDBps = object.idleDBps ?? "0";
+    message.serveFloorBps = object.serveFloorBps ?? "0";
+    message.denialFloorBps = object.denialFloorBps ?? "0";
+    message.idleProtectBps = object.idleProtectBps ?? "0";
+    message.idleUntrustedBps = object.idleUntrustedBps ?? "0";
+    message.trustMinServes = object.trustMinServes ?? "0";
+    message.trustMaxRateBps = object.trustMaxRateBps ?? "0";
     return message;
   },
 };

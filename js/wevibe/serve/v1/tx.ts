@@ -18,6 +18,12 @@ export interface ServeEntry {
   modelId: string;
   turnCount: number;
   contributorWallet: string;
+  /**
+   * Matched-keyword set for this serve event - the intersection of the
+   * memory's keywords and the query's keyword set. Required, non-empty.
+   * Per D-4.2 Implementation Clarifications (DMO-007).
+   */
+  matchedKeywords: string[];
 }
 
 export interface MsgSubmitServeBatch {
@@ -69,6 +75,7 @@ function createBaseServeEntry(): ServeEntry {
     modelId: "",
     turnCount: 0,
     contributorWallet: "",
+    matchedKeywords: [],
   };
 }
 
@@ -94,6 +101,9 @@ export const ServeEntry: MessageFns<ServeEntry> = {
     }
     if (message.contributorWallet !== "") {
       writer.uint32(58).string(message.contributorWallet);
+    }
+    for (const v of message.matchedKeywords) {
+      writer.uint32(66).string(v!);
     }
     return writer;
   },
@@ -161,6 +171,14 @@ export const ServeEntry: MessageFns<ServeEntry> = {
           message.contributorWallet = reader.string();
           continue;
         }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.matchedKeywords.push(reader.string());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -203,6 +221,11 @@ export const ServeEntry: MessageFns<ServeEntry> = {
         : isSet(object.contributor_wallet)
         ? globalThis.String(object.contributor_wallet)
         : "",
+      matchedKeywords: globalThis.Array.isArray(object?.matchedKeywords)
+        ? object.matchedKeywords.map((e: any) => globalThis.String(e))
+        : globalThis.Array.isArray(object?.matched_keywords)
+        ? object.matched_keywords.map((e: any) => globalThis.String(e))
+        : [],
     };
   },
 
@@ -229,6 +252,9 @@ export const ServeEntry: MessageFns<ServeEntry> = {
     if (message.contributorWallet !== "") {
       obj.contributorWallet = message.contributorWallet;
     }
+    if (message.matchedKeywords?.length) {
+      obj.matchedKeywords = message.matchedKeywords;
+    }
     return obj;
   },
 
@@ -244,6 +270,7 @@ export const ServeEntry: MessageFns<ServeEntry> = {
     message.modelId = object.modelId ?? "";
     message.turnCount = object.turnCount ?? 0;
     message.contributorWallet = object.contributorWallet ?? "";
+    message.matchedKeywords = object.matchedKeywords?.map((e) => e) || [];
     return message;
   },
 };

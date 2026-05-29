@@ -187,6 +187,18 @@ export interface QueryVerifyUpheldReportResponse {
   approvingModerators: string[];
   upholdingModerators: string[];
   upheldAtEpoch: string;
+  salt: Uint8Array;
+  ciphertextHash: Uint8Array;
+  wrappedDekHash: Uint8Array;
+  contributorSig: Uint8Array;
+  contributorPubkey: string;
+  encryptedBlob: Uint8Array;
+  wrappedDekEnc: Uint8Array;
+  contentHash: Uint8Array;
+  orgId: string;
+  epoch: string;
+  memoryType: string;
+  canonicalBody: Uint8Array;
 }
 
 function createBaseQueryGetReputationRequest(): QueryGetReputationRequest {
@@ -3106,6 +3118,18 @@ function createBaseQueryVerifyUpheldReportResponse(): QueryVerifyUpheldReportRes
     approvingModerators: [],
     upholdingModerators: [],
     upheldAtEpoch: "0",
+    salt: new Uint8Array(0),
+    ciphertextHash: new Uint8Array(0),
+    wrappedDekHash: new Uint8Array(0),
+    contributorSig: new Uint8Array(0),
+    contributorPubkey: "",
+    encryptedBlob: new Uint8Array(0),
+    wrappedDekEnc: new Uint8Array(0),
+    contentHash: new Uint8Array(0),
+    orgId: "",
+    epoch: "0",
+    memoryType: "",
+    canonicalBody: new Uint8Array(0),
   };
 }
 
@@ -3134,6 +3158,42 @@ export const QueryVerifyUpheldReportResponse: MessageFns<QueryVerifyUpheldReport
     }
     if (message.upheldAtEpoch !== "0") {
       writer.uint32(64).uint64(message.upheldAtEpoch);
+    }
+    if (message.salt.length !== 0) {
+      writer.uint32(74).bytes(message.salt);
+    }
+    if (message.ciphertextHash.length !== 0) {
+      writer.uint32(82).bytes(message.ciphertextHash);
+    }
+    if (message.wrappedDekHash.length !== 0) {
+      writer.uint32(90).bytes(message.wrappedDekHash);
+    }
+    if (message.contributorSig.length !== 0) {
+      writer.uint32(98).bytes(message.contributorSig);
+    }
+    if (message.contributorPubkey !== "") {
+      writer.uint32(106).string(message.contributorPubkey);
+    }
+    if (message.encryptedBlob.length !== 0) {
+      writer.uint32(114).bytes(message.encryptedBlob);
+    }
+    if (message.wrappedDekEnc.length !== 0) {
+      writer.uint32(122).bytes(message.wrappedDekEnc);
+    }
+    if (message.contentHash.length !== 0) {
+      writer.uint32(130).bytes(message.contentHash);
+    }
+    if (message.orgId !== "") {
+      writer.uint32(138).string(message.orgId);
+    }
+    if (message.epoch !== "0") {
+      writer.uint32(144).uint64(message.epoch);
+    }
+    if (message.memoryType !== "") {
+      writer.uint32(154).string(message.memoryType);
+    }
+    if (message.canonicalBody.length !== 0) {
+      writer.uint32(162).bytes(message.canonicalBody);
     }
     return writer;
   },
@@ -3209,6 +3269,102 @@ export const QueryVerifyUpheldReportResponse: MessageFns<QueryVerifyUpheldReport
           message.upheldAtEpoch = reader.uint64().toString();
           continue;
         }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.salt = reader.bytes();
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.ciphertextHash = reader.bytes();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.wrappedDekHash = reader.bytes();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.contributorSig = reader.bytes();
+          continue;
+        }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.contributorPubkey = reader.string();
+          continue;
+        }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.encryptedBlob = reader.bytes();
+          continue;
+        }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.wrappedDekEnc = reader.bytes();
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.contentHash = reader.bytes();
+          continue;
+        }
+        case 17: {
+          if (tag !== 138) {
+            break;
+          }
+
+          message.orgId = reader.string();
+          continue;
+        }
+        case 18: {
+          if (tag !== 144) {
+            break;
+          }
+
+          message.epoch = reader.uint64().toString();
+          continue;
+        }
+        case 19: {
+          if (tag !== 154) {
+            break;
+          }
+
+          message.memoryType = reader.string();
+          continue;
+        }
+        case 20: {
+          if (tag !== 162) {
+            break;
+          }
+
+          message.canonicalBody = reader.bytes();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3248,6 +3404,58 @@ export const QueryVerifyUpheldReportResponse: MessageFns<QueryVerifyUpheldReport
         : isSet(object.upheld_at_epoch)
         ? globalThis.String(object.upheld_at_epoch)
         : "0",
+      salt: isSet(object.salt) ? bytesFromBase64(object.salt) : new Uint8Array(0),
+      ciphertextHash: isSet(object.ciphertextHash)
+        ? bytesFromBase64(object.ciphertextHash)
+        : isSet(object.ciphertext_hash)
+        ? bytesFromBase64(object.ciphertext_hash)
+        : new Uint8Array(0),
+      wrappedDekHash: isSet(object.wrappedDekHash)
+        ? bytesFromBase64(object.wrappedDekHash)
+        : isSet(object.wrapped_dek_hash)
+        ? bytesFromBase64(object.wrapped_dek_hash)
+        : new Uint8Array(0),
+      contributorSig: isSet(object.contributorSig)
+        ? bytesFromBase64(object.contributorSig)
+        : isSet(object.contributor_sig)
+        ? bytesFromBase64(object.contributor_sig)
+        : new Uint8Array(0),
+      contributorPubkey: isSet(object.contributorPubkey)
+        ? globalThis.String(object.contributorPubkey)
+        : isSet(object.contributor_pubkey)
+        ? globalThis.String(object.contributor_pubkey)
+        : "",
+      encryptedBlob: isSet(object.encryptedBlob)
+        ? bytesFromBase64(object.encryptedBlob)
+        : isSet(object.encrypted_blob)
+        ? bytesFromBase64(object.encrypted_blob)
+        : new Uint8Array(0),
+      wrappedDekEnc: isSet(object.wrappedDekEnc)
+        ? bytesFromBase64(object.wrappedDekEnc)
+        : isSet(object.wrapped_dek_enc)
+        ? bytesFromBase64(object.wrapped_dek_enc)
+        : new Uint8Array(0),
+      contentHash: isSet(object.contentHash)
+        ? bytesFromBase64(object.contentHash)
+        : isSet(object.content_hash)
+        ? bytesFromBase64(object.content_hash)
+        : new Uint8Array(0),
+      orgId: isSet(object.orgId)
+        ? globalThis.String(object.orgId)
+        : isSet(object.org_id)
+        ? globalThis.String(object.org_id)
+        : "",
+      epoch: isSet(object.epoch) ? globalThis.String(object.epoch) : "0",
+      memoryType: isSet(object.memoryType)
+        ? globalThis.String(object.memoryType)
+        : isSet(object.memory_type)
+        ? globalThis.String(object.memory_type)
+        : "",
+      canonicalBody: isSet(object.canonicalBody)
+        ? bytesFromBase64(object.canonicalBody)
+        : isSet(object.canonical_body)
+        ? bytesFromBase64(object.canonical_body)
+        : new Uint8Array(0),
     };
   },
 
@@ -3277,6 +3485,42 @@ export const QueryVerifyUpheldReportResponse: MessageFns<QueryVerifyUpheldReport
     if (message.upheldAtEpoch !== "0") {
       obj.upheldAtEpoch = message.upheldAtEpoch;
     }
+    if (message.salt.length !== 0) {
+      obj.salt = base64FromBytes(message.salt);
+    }
+    if (message.ciphertextHash.length !== 0) {
+      obj.ciphertextHash = base64FromBytes(message.ciphertextHash);
+    }
+    if (message.wrappedDekHash.length !== 0) {
+      obj.wrappedDekHash = base64FromBytes(message.wrappedDekHash);
+    }
+    if (message.contributorSig.length !== 0) {
+      obj.contributorSig = base64FromBytes(message.contributorSig);
+    }
+    if (message.contributorPubkey !== "") {
+      obj.contributorPubkey = message.contributorPubkey;
+    }
+    if (message.encryptedBlob.length !== 0) {
+      obj.encryptedBlob = base64FromBytes(message.encryptedBlob);
+    }
+    if (message.wrappedDekEnc.length !== 0) {
+      obj.wrappedDekEnc = base64FromBytes(message.wrappedDekEnc);
+    }
+    if (message.contentHash.length !== 0) {
+      obj.contentHash = base64FromBytes(message.contentHash);
+    }
+    if (message.orgId !== "") {
+      obj.orgId = message.orgId;
+    }
+    if (message.epoch !== "0") {
+      obj.epoch = message.epoch;
+    }
+    if (message.memoryType !== "") {
+      obj.memoryType = message.memoryType;
+    }
+    if (message.canonicalBody.length !== 0) {
+      obj.canonicalBody = base64FromBytes(message.canonicalBody);
+    }
     return obj;
   },
 
@@ -3295,6 +3539,18 @@ export const QueryVerifyUpheldReportResponse: MessageFns<QueryVerifyUpheldReport
     message.approvingModerators = object.approvingModerators?.map((e) => e) || [];
     message.upholdingModerators = object.upholdingModerators?.map((e) => e) || [];
     message.upheldAtEpoch = object.upheldAtEpoch ?? "0";
+    message.salt = object.salt ?? new Uint8Array(0);
+    message.ciphertextHash = object.ciphertextHash ?? new Uint8Array(0);
+    message.wrappedDekHash = object.wrappedDekHash ?? new Uint8Array(0);
+    message.contributorSig = object.contributorSig ?? new Uint8Array(0);
+    message.contributorPubkey = object.contributorPubkey ?? "";
+    message.encryptedBlob = object.encryptedBlob ?? new Uint8Array(0);
+    message.wrappedDekEnc = object.wrappedDekEnc ?? new Uint8Array(0);
+    message.contentHash = object.contentHash ?? new Uint8Array(0);
+    message.orgId = object.orgId ?? "";
+    message.epoch = object.epoch ?? "0";
+    message.memoryType = object.memoryType ?? "";
+    message.canonicalBody = object.canonicalBody ?? new Uint8Array(0);
     return message;
   },
 };

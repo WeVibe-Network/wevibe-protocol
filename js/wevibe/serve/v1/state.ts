@@ -19,6 +19,11 @@ export interface StoredServeAttestation {
   isSelfServe: boolean;
   modelId: string;
   turnCount: number;
+  /**
+   * Matched-keyword set captured from the originating serve TX.
+   * Per D-4.2 Implementation Clarifications (DMO-007).
+   */
+  matchedKeywords: string[];
 }
 
 export interface StoredDenialAttestation {
@@ -65,6 +70,7 @@ function createBaseStoredServeAttestation(): StoredServeAttestation {
     isSelfServe: false,
     modelId: "",
     turnCount: 0,
+    matchedKeywords: [],
   };
 }
 
@@ -96,6 +102,9 @@ export const StoredServeAttestation: MessageFns<StoredServeAttestation> = {
     }
     if (message.turnCount !== 0) {
       writer.uint32(72).uint32(message.turnCount);
+    }
+    for (const v of message.matchedKeywords) {
+      writer.uint32(82).string(v!);
     }
     return writer;
   },
@@ -179,6 +188,14 @@ export const StoredServeAttestation: MessageFns<StoredServeAttestation> = {
           message.turnCount = reader.uint32();
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.matchedKeywords.push(reader.string());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -227,6 +244,11 @@ export const StoredServeAttestation: MessageFns<StoredServeAttestation> = {
         : isSet(object.turn_count)
         ? globalThis.Number(object.turn_count)
         : 0,
+      matchedKeywords: globalThis.Array.isArray(object?.matchedKeywords)
+        ? object.matchedKeywords.map((e: any) => globalThis.String(e))
+        : globalThis.Array.isArray(object?.matched_keywords)
+        ? object.matched_keywords.map((e: any) => globalThis.String(e))
+        : [],
     };
   },
 
@@ -259,6 +281,9 @@ export const StoredServeAttestation: MessageFns<StoredServeAttestation> = {
     if (message.turnCount !== 0) {
       obj.turnCount = Math.round(message.turnCount);
     }
+    if (message.matchedKeywords?.length) {
+      obj.matchedKeywords = message.matchedKeywords;
+    }
     return obj;
   },
 
@@ -276,6 +301,7 @@ export const StoredServeAttestation: MessageFns<StoredServeAttestation> = {
     message.isSelfServe = object.isSelfServe ?? false;
     message.modelId = object.modelId ?? "";
     message.turnCount = object.turnCount ?? 0;
+    message.matchedKeywords = object.matchedKeywords?.map((e) => e) || [];
     return message;
   },
 };
