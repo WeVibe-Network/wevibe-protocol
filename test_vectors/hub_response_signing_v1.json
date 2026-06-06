@@ -1,0 +1,40 @@
+{
+  "version": "WV-HUBSIG-v1",
+  "description": "Canonical digest construction vectors for Hub RESPONSE signing (D-HUB-RESPONSE-SIGNED). Hubs sign responses with the org serving key; clients verify X-Hub-Signature against hub_serving_address from the org directory.",
+  "vectors": [
+    {
+      "name": "json_success_200",
+      "inputs": {
+        "hub_serving_address": "wevibe1servingexample8w7x9l2p5q6r3t4u0v",
+        "http_status_code": 200,
+        "content_type": "application/json",
+        "response_body_utf8": "{\"results\":[{\"cid\":\"abc123\",\"score\":0.99}],\"contested\":false}"
+      },
+      "canonicalization": {
+        "canonical_digest_message_format": "WV-HUBSIG-v1\\nstatus:<decimal_http_status_code>\\ncontent_type:<lowercase_media_type_without_parameters_or_empty>\\nbody_bytes_hex:<lowercase_hex_of_exact_response_body_utf8_bytes>\\n",
+        "body_bytes_hex": "7b22726573756c7473223a5b7b22636964223a22616263313233222c2273636f7265223a302e39397d5d2c22636f6e746573746564223a66616c73657d",
+        "canonical_digest_message": "WV-HUBSIG-v1\\nstatus:200\\ncontent_type:application/json\\nbody_bytes_hex:7b22726573756c7473223a5b7b22636964223a22616263313233222c2273636f7265223a302e39397d5d2c22636f6e746573746564223a66616c73657d\\n",
+        "digest_algorithm": "SHA-256 over UTF-8 bytes of canonical_digest_message"
+      },
+      "expected_canonical_digest": "PLACEHOLDER__compute_sha256_hex(canonical_digest_message_utf8_bytes)",
+      "expected_signature_header": "PLACEHOLDER__compute_hex_ed25519_signature_over_digest_with_org_serving_private_key"
+    },
+    {
+      "name": "text_error_503",
+      "inputs": {
+        "hub_serving_address": "wevibe1servingexample8w7x9l2p5q6r3t4u0v",
+        "http_status_code": 503,
+        "content_type": "text/plain",
+        "response_body_utf8": "temporarily unavailable\\nretry later\\n"
+      },
+      "canonicalization": {
+        "canonical_digest_message_format": "WV-HUBSIG-v1\\nstatus:<decimal_http_status_code>\\ncontent_type:<lowercase_media_type_without_parameters_or_empty>\\nbody_bytes_hex:<lowercase_hex_of_exact_response_body_utf8_bytes>\\n",
+        "body_bytes_hex": "74656d706f726172696c7920756e617661696c61626c650a7265747279206c617465720a",
+        "canonical_digest_message": "WV-HUBSIG-v1\\nstatus:503\\ncontent_type:text/plain\\nbody_bytes_hex:74656d706f726172696c7920756e617661696c61626c650a7265747279206c617465720a\\n",
+        "digest_algorithm": "SHA-256 over UTF-8 bytes of canonical_digest_message"
+      },
+      "expected_canonical_digest": "PLACEHOLDER__compute_sha256_hex(canonical_digest_message_utf8_bytes)",
+      "expected_signature_header": "PLACEHOLDER__compute_hex_ed25519_signature_over_digest_with_org_serving_private_key"
+    }
+  ]
+}

@@ -37,6 +37,17 @@ components:
         Ed25519 signature (hex) over a canonical message derived from request body fields.
         Used for org creation, member invite, epoch rotation, and approval/deny actions.
 
+    HubSigned:
+      type: apiKey
+      in: header
+      name: X-Hub-Signature
+      description: >
+        Hub RESPONSE signature (D-HUB-RESPONSE-SIGNED). The hub signs each response
+        with the org's on-chain serving key; the value is hex Ed25519 over a canonical
+        digest of the response body. Clients MUST verify it against the org's
+        hub_serving_address (resolved from chain). Defeats transport-level endpoint
+        swap / MITM independent of endpoint resolution.
+
   schemas:
     Error:
       type: object
@@ -53,6 +64,17 @@ components:
         org_name: { type: string }
         domain: { type: string }
         leader_pubkey: { type: string, description: Hex Ed25519 public key }
+        hub_serving_address:
+          type: string
+          description: Cosmos address of the org's serve/deny serving key (AUTH). Clients verify HubSigned responses against this.
+        hub_endpoints:
+          type: array
+          items:
+            type: string
+            format: uri
+          minItems: 0
+          maxItems: 3
+          description: Ordered 1-3 transport URLs (TRANSPORT) where clients reach the org's hub; priority-ordered failover; all replicas fronting hub_serving_address. Resolved from chain — the org directory. D-CHAIN-RESOLVED-HUB-ENDPOINT.
         current_epoch: { type: integer }
         egress_mode: { type: string, enum: [local_only, allowlist, unrestricted] }
         allowed_providers: { type: array, items: { type: string } }
@@ -595,6 +617,7 @@ paths:
   /v1/orgs/{orgID}:
     get:
       summary: Get organization details
+      description: Org directory response resolved from chain; clients use this to resolve hub_endpoints (transport) and hub_serving_address (AUTH).
       operationId: getOrg
       tags: [Organizations]
       security: []
