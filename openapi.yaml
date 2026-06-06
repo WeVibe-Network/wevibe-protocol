@@ -43,10 +43,12 @@ components:
       name: X-Hub-Signature
       description: >
         Hub RESPONSE signature (D-HUB-RESPONSE-SIGNED). The hub signs each response
-        with the org's on-chain serving key; the value is hex Ed25519 over a canonical
-        digest of the response body. Clients MUST verify it against the org's
-        hub_serving_address (resolved from chain). Defeats transport-level endpoint
-        swap / MITM independent of endpoint resolution.
+        with a DEDICATED ed25519 response-signing key; the value is hex Ed25519 over a
+        canonical digest of the response body. Clients MUST verify it against the org's
+        on-chain hub_response_pubkey (resolved from chain), NOT against hub_serving_address.
+        The response key is intentionally separate from the secp256k1 serve/deny serving
+        key, so a leaked response key cannot drain funds or submit batches. Defeats
+        transport-level endpoint swap / MITM independent of endpoint resolution.
 
   schemas:
     Error:
@@ -66,7 +68,10 @@ components:
         leader_pubkey: { type: string, description: Hex Ed25519 public key }
         hub_serving_address:
           type: string
-          description: Cosmos address of the org's serve/deny serving key (AUTH). Clients verify HubSigned responses against this.
+          description: Cosmos address of the org's serve/deny serving key (AUTH, secp256k1). Distinct from the response-signing key.
+        hub_response_pubkey:
+          type: string
+          description: Hex ed25519 public key of the org hub's DEDICATED response-signing key (INTEGRITY). Clients verify HubSigned (X-Hub-Signature) responses against this. Published on-chain via MsgSetServingInfo. D-HUB-RESPONSE-SIGNED.
         hub_endpoints:
           type: array
           items:
