@@ -1,94 +1,64 @@
-# wevibe-protocol
+# WeVibe Protocol
 
-Cross-cutting protocol contracts for WeVibe Network.
+**Cross-component contract definitions and conformance artifacts for the WeVibe Network.**
 
-- `openapi.yaml` - Hub HTTP API contract
-- `test_vectors/` - Protocol-level test fixtures (consumed by sdk,
-  hub, dashboard, mcp)
-- `contract_test.sh` - Contract conformance harness
-- `docs/PROTOCOL.md` - Protocol overview
-- `js/` - `@wevibe-network/protocol-js` TypeScript bindings for
-  WeVibe chain messages (generated from `wevibe-chain/proto/`).
+## Overview
 
-This repository is read by:
-- `wevibe-sdk` (Rust crypto verification against test vectors)
-- `wevibe-mcp` (TypeScript client conformance)
-- `wevibe-server` (Go hub server-side conformance; dashboard TS
-  consumes `@wevibe-network/protocol-js` from this directory)
+`wevibe-protocol` is the shared contract repository used across independently built components.
 
-## JS/TS Bindings Package
+It currently includes:
+- `openapi.yaml` — Hub HTTP API contract
+- `test_vectors/` — protocol-level vectors consumed by SDK, hub, dashboard, and MCP clients
+- `contract_test.sh` — contract-conformance harness for a running hub
+- `docs/PROTOCOL.md` — protocol specification overview
+- `js/` — generated TypeScript bindings published as `@wevibe-network/protocol-js`
 
-This directory publishes `@wevibe-network/protocol-js` — TypeScript
-bindings for WeVibe chain message types, generated from
-`wevibe-chain/proto/` via `bufbuild/buf` and `ts-proto`.
+Status: **alpha**. Core contracts, vectors, and conformance checks exist today. Hub response-signing rollout across deployments is a near-term milestone.
 
-### Regenerating
+## Role in the WeVibe Network
+
+This repository exists so self-hosted hubs, clients, and forks can conform to one verifiable interface and one signature-verification path.
+
+In particular, the hub-response signature contract is specified here (see `openapi.yaml` and `test_vectors/hub_response_signing_v1.json`), with response verification tied to org key material resolved from chain serving metadata.
+
+## Getting started (build/run)
+
+### Regenerate TypeScript bindings
+
+The `@wevibe-network/protocol-js` package is generated via `buf` + `ts-proto`.
 
 ```sh
-bash codegen/regen.sh   # or: npm run regen
+npm run regen
+# or
+bash codegen/regen.sh
 ```
 
-Generated output lands in `js/`. Re-run whenever the chain protos
-change. The pinned generator image is `bufbuild/buf:1.34.0`
-(D-S29-PROTO-BUF-IMG).
+### Run the conformance harness against a hub
 
-### Consuming
-
-From `wevibe-server/wevibe-dashboard` (and future consumers):
-
-```json
-"dependencies": {
-  "@wevibe-network/protocol-js": "file:../../wevibe-protocol"
-}
+```sh
+bash contract_test.sh
 ```
 
-Imports — namespaced module access (recommended, disambiguates the
-per-module `MsgUpdateParams` types):
+## Testing
 
-```ts
-import { memoryV1, orgV1, wevibeMessageRegistryEntries }
-  from '@wevibe-network/protocol-js';
+- `bash contract_test.sh` runs the contract smoke checks against a running hub.
+- `test_vectors/` contains deterministic protocol fixtures for cross-client compatibility verification.
 
-const msg = memoryV1.MsgSubmitCommitment.fromPartial({ /* fields */ });
-```
+## Configuration (environment and ports)
 
-Or flat imports of the non-colliding message types:
+- The OpenAPI development server target is `http://localhost:4440`.
+- `contract_test.sh` uses the same hub base URL (`BASE="http://localhost:4440"`).
 
-```ts
-import { MsgSubmitCommitment, MsgRegisterOrg }
-  from '@wevibe-network/protocol-js';
-```
+## Roadmap
 
-### CosmJS Registry integration
-
-```ts
-import { Registry } from '@cosmjs/proto-signing';
-import { defaultRegistryTypes } from '@cosmjs/stargate';
-import { wevibeMessageRegistryEntries } from '@wevibe-network/protocol-js';
-
-const registry = new Registry([
-  ...defaultRegistryTypes,
-  ...wevibeMessageRegistryEntries,
-]);
-```
-
-### Contents
-
-- `js/wevibe/<module>/v1/tx.ts` — generated message types
-  (do not hand-edit)
-- `js/index.ts` — hand-authored entry point that re-exports every
-  module's `tx.ts` under a namespace alias (e.g. `memoryV1`)
-  plus the non-conflicting message types flat at the root
-- `js/registry.ts` — hand-authored CosmJS Registry helper that
-  maps every WeVibe Msg type URL to its generated codec
-
-### Versioning
-
-The package is `"private": true` during pre-alpha; consumers use
-local file path. Bumping the chain proto schema is a coordinated
-change with the registry list. See `js/registry.ts` source comment.
+See [ROADMAP.md](./ROADMAP.md).
 
 ## License
 
-Apache-2.0. See LICENSE.
+Apache-2.0. See [LICENSE](./LICENSE).
 
+## Links
+
+- Docs: https://github.com/WeVibe-Network/wevibe-docs
+- Organization: https://github.com/WeVibe-Network
+- X: https://x.com/WeVibe_Network
