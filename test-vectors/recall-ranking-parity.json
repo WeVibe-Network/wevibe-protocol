@@ -1,0 +1,516 @@
+{
+  "schema": "recall-ranking-parity/v1",
+  "generatedFrom": "wevibe-sim/recall-sim/pipeline/rank.mjs",
+  "cases": [
+    {
+      "name": "gate_on_basic",
+      "candidates": [
+        {
+          "id": "A",
+          "vectorScore": 0.9,
+          "keywordWeights": {
+            "nginx": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "B",
+          "vectorScore": 0.8,
+          "keywordWeights": {
+            "node": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "C",
+          "vectorScore": 0.6,
+          "keywordWeights": {
+            "nginx": 0.2
+          },
+          "pendingDenials": 0,
+          "age": 0
+        }
+      ],
+      "query": {
+        "keywordWeights": {
+          "nginx": 1
+        }
+      },
+      "opts": {
+        "gate": true,
+        "keywordBoostFactor": 0.1,
+        "newMemBoost": false,
+        "grace": 20,
+        "boostWindow": 30,
+        "newMemMult": 0.5
+      },
+      "expected": {
+        "order": [
+          "A",
+          "C"
+        ],
+        "finals": {
+          "A": 1,
+          "C": 0.62
+        },
+        "dropCount": {
+          "gate": 1,
+          "vector": 0,
+          "kept": 2,
+          "total": 3
+        }
+      }
+    },
+    {
+      "name": "gate_off_basic",
+      "candidates": [
+        {
+          "id": "A",
+          "vectorScore": 0.9,
+          "keywordWeights": {
+            "nginx": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "B",
+          "vectorScore": 0.8,
+          "keywordWeights": {
+            "node": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "C",
+          "vectorScore": 0.6,
+          "keywordWeights": {
+            "nginx": 0.2
+          },
+          "pendingDenials": 0,
+          "age": 0
+        }
+      ],
+      "query": {
+        "keywordWeights": {
+          "nginx": 1
+        }
+      },
+      "opts": {
+        "gate": false,
+        "keywordBoostFactor": 0.1,
+        "newMemBoost": false,
+        "grace": 20,
+        "boostWindow": 30,
+        "newMemMult": 0.5
+      },
+      "expected": {
+        "order": [
+          "A",
+          "B",
+          "C"
+        ],
+        "finals": {
+          "A": 1,
+          "B": 0.8,
+          "C": 0.62
+        },
+        "dropCount": {
+          "gate": 0,
+          "vector": 0,
+          "kept": 3,
+          "total": 3
+        }
+      }
+    },
+    {
+      "name": "vector_drop",
+      "candidates": [
+        {
+          "id": "A",
+          "vectorScore": 0.9,
+          "keywordWeights": {
+            "nginx": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "D",
+          "vectorScore": 0,
+          "keywordWeights": {
+            "nginx": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "E",
+          "vectorScore": -0.2,
+          "keywordWeights": {
+            "nginx": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        }
+      ],
+      "query": {
+        "keywordWeights": {
+          "nginx": 1
+        }
+      },
+      "opts": {
+        "gate": true,
+        "keywordBoostFactor": 0.1,
+        "newMemBoost": false,
+        "grace": 20,
+        "boostWindow": 30,
+        "newMemMult": 0.5
+      },
+      "expected": {
+        "order": [
+          "A"
+        ],
+        "finals": {
+          "A": 1
+        },
+        "dropCount": {
+          "gate": 0,
+          "vector": 2,
+          "kept": 1,
+          "total": 3
+        }
+      }
+    },
+    {
+      "name": "keyword_boost_orders",
+      "candidates": [
+        {
+          "id": "A",
+          "vectorScore": 0.6,
+          "keywordWeights": {
+            "redis": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "B",
+          "vectorScore": 0.61,
+          "keywordWeights": {},
+          "pendingDenials": 0,
+          "age": 0
+        }
+      ],
+      "query": {
+        "keywordWeights": {
+          "redis": 1
+        }
+      },
+      "opts": {
+        "gate": false,
+        "keywordBoostFactor": 0.1,
+        "newMemBoost": false,
+        "grace": 20,
+        "boostWindow": 30,
+        "newMemMult": 0.5
+      },
+      "expected": {
+        "order": [
+          "A",
+          "B"
+        ],
+        "finals": {
+          "A": 0.7,
+          "B": 0.6100000000000001
+        },
+        "dropCount": {
+          "gate": 0,
+          "vector": 0,
+          "kept": 2,
+          "total": 2
+        }
+      }
+    },
+    {
+      "name": "denial_decay",
+      "candidates": [
+        {
+          "id": "A",
+          "vectorScore": 0.9,
+          "keywordWeights": {},
+          "pendingDenials": 3,
+          "age": 0
+        },
+        {
+          "id": "B",
+          "vectorScore": 0.8,
+          "keywordWeights": {},
+          "pendingDenials": 0,
+          "age": 0
+        }
+      ],
+      "query": {
+        "keywordWeights": {}
+      },
+      "opts": {
+        "gate": false,
+        "keywordBoostFactor": 0.1,
+        "newMemBoost": false,
+        "grace": 20,
+        "boostWindow": 30,
+        "newMemMult": 0.5
+      },
+      "expected": {
+        "order": [
+          "B",
+          "A"
+        ],
+        "finals": {
+          "B": 0.8,
+          "A": 0.75
+        },
+        "dropCount": {
+          "gate": 0,
+          "vector": 0,
+          "kept": 2,
+          "total": 2
+        }
+      }
+    },
+    {
+      "name": "newmem_boost_on",
+      "candidates": [
+        {
+          "id": "A",
+          "vectorScore": 0.6,
+          "keywordWeights": {},
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "B",
+          "vectorScore": 0.65,
+          "keywordWeights": {},
+          "pendingDenials": 0,
+          "age": 25
+        }
+      ],
+      "query": {
+        "keywordWeights": {}
+      },
+      "opts": {
+        "gate": false,
+        "keywordBoostFactor": 0.1,
+        "newMemBoost": true,
+        "grace": 20,
+        "boostWindow": 30,
+        "newMemMult": 0.5
+      },
+      "expected": {
+        "order": [
+          "A",
+          "B"
+        ],
+        "finals": {
+          "A": 0.8999999999999999,
+          "B": 0.8125
+        },
+        "dropCount": {
+          "gate": 0,
+          "vector": 0,
+          "kept": 2,
+          "total": 2
+        }
+      }
+    },
+    {
+      "name": "empty_query_keywords_no_gate_drop",
+      "candidates": [
+        {
+          "id": "A",
+          "vectorScore": 0.8,
+          "keywordWeights": {
+            "nginx": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "B",
+          "vectorScore": 0.6,
+          "keywordWeights": {
+            "node": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        }
+      ],
+      "query": {
+        "keywordWeights": {}
+      },
+      "opts": {
+        "gate": true,
+        "keywordBoostFactor": 0.1,
+        "newMemBoost": false,
+        "grace": 20,
+        "boostWindow": 30,
+        "newMemMult": 0.5
+      },
+      "expected": {
+        "order": [
+          "A",
+          "B"
+        ],
+        "finals": {
+          "A": 0.8,
+          "B": 0.6
+        },
+        "dropCount": {
+          "gate": 0,
+          "vector": 0,
+          "kept": 2,
+          "total": 2
+        }
+      }
+    },
+    {
+      "name": "case_insensitive_keywords",
+      "candidates": [
+        {
+          "id": "A",
+          "vectorScore": 0.8,
+          "keywordWeights": {
+            "NGINX": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "B",
+          "vectorScore": 0.85,
+          "keywordWeights": {
+            "node": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        }
+      ],
+      "query": {
+        "keywordWeights": {
+          "nginx": 1
+        }
+      },
+      "opts": {
+        "gate": true,
+        "keywordBoostFactor": 0.1,
+        "newMemBoost": false,
+        "grace": 20,
+        "boostWindow": 30,
+        "newMemMult": 0.5
+      },
+      "expected": {
+        "order": [
+          "A"
+        ],
+        "finals": {
+          "A": 0.9
+        },
+        "dropCount": {
+          "gate": 1,
+          "vector": 0,
+          "kept": 1,
+          "total": 2
+        }
+      }
+    },
+    {
+      "name": "all_distinct_multi",
+      "candidates": [
+        {
+          "id": "A",
+          "vectorScore": 0.9,
+          "keywordWeights": {},
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "B",
+          "vectorScore": 0.8,
+          "keywordWeights": {
+            "redis": 0.8
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "C",
+          "vectorScore": 0.6,
+          "keywordWeights": {
+            "nginx": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "D",
+          "vectorScore": 0.5,
+          "keywordWeights": {
+            "redis": 0.5,
+            "nginx": 1
+          },
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "E",
+          "vectorScore": 0.3,
+          "keywordWeights": {
+            "redis": 0.2
+          },
+          "pendingDenials": 0,
+          "age": 0
+        }
+      ],
+      "query": {
+        "keywordWeights": {
+          "redis": 1,
+          "nginx": 0.5
+        }
+      },
+      "opts": {
+        "gate": false,
+        "keywordBoostFactor": 0.1,
+        "newMemBoost": false,
+        "grace": 20,
+        "boostWindow": 30,
+        "newMemMult": 0.5
+      },
+      "expected": {
+        "order": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "finals": {
+          "A": 0.9,
+          "B": 0.8800000000000001,
+          "C": 0.65,
+          "D": 0.6000000000000001,
+          "E": 0.32
+        },
+        "dropCount": {
+          "gate": 0,
+          "vector": 0,
+          "kept": 5,
+          "total": 5
+        }
+      }
+    }
+  ]
+}
