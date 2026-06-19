@@ -41,6 +41,7 @@
       "opts": {
         "gate": true,
         "keywordBoostFactor": 0.1,
+        "delta": 0.15,
         "newMemBoost": false,
         "grace": 20,
         "boostWindow": 30,
@@ -102,6 +103,7 @@
       "opts": {
         "gate": false,
         "keywordBoostFactor": 0.1,
+        "delta": 0.15,
         "newMemBoost": false,
         "grace": 20,
         "boostWindow": 30,
@@ -165,6 +167,7 @@
       "opts": {
         "gate": true,
         "keywordBoostFactor": 0.1,
+        "delta": 0.15,
         "newMemBoost": false,
         "grace": 20,
         "boostWindow": 30,
@@ -213,6 +216,7 @@
       "opts": {
         "gate": false,
         "keywordBoostFactor": 0.1,
+        "delta": 0.15,
         "newMemBoost": false,
         "grace": 20,
         "boostWindow": 30,
@@ -224,7 +228,7 @@
           "B"
         ],
         "finals": {
-          "A": 0.7,
+          "A": 0.69,
           "B": 0.6100000000000001
         },
         "dropCount": {
@@ -259,6 +263,7 @@
       "opts": {
         "gate": false,
         "keywordBoostFactor": 0.1,
+        "delta": 0.15,
         "newMemBoost": false,
         "grace": 20,
         "boostWindow": 30,
@@ -305,6 +310,7 @@
       "opts": {
         "gate": false,
         "keywordBoostFactor": 0.1,
+        "delta": 0.15,
         "newMemBoost": true,
         "grace": 20,
         "boostWindow": 30,
@@ -355,6 +361,7 @@
       "opts": {
         "gate": true,
         "keywordBoostFactor": 0.1,
+        "delta": 0.15,
         "newMemBoost": false,
         "grace": 20,
         "boostWindow": 30,
@@ -407,6 +414,7 @@
       "opts": {
         "gate": true,
         "keywordBoostFactor": 0.1,
+        "delta": 0.15,
         "newMemBoost": false,
         "grace": 20,
         "boostWindow": 30,
@@ -484,6 +492,7 @@
       "opts": {
         "gate": false,
         "keywordBoostFactor": 0.1,
+        "delta": 0.15,
         "newMemBoost": false,
         "grace": 20,
         "boostWindow": 30,
@@ -501,7 +510,7 @@
           "A": 0.9,
           "B": 0.8800000000000001,
           "C": 0.65,
-          "D": 0.6000000000000001,
+          "D": 0.5750000000000002,
           "E": 0.32
         },
         "dropCount": {
