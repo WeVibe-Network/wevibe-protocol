@@ -20,7 +20,7 @@ The protocol package defines the canonical wire formats shared by wevibe-chain c
 - `schemas/relationship.json` — relationship edges, including effect semantics.
 - `schemas/contest.json` — contest submission and resolution payloads.
 - `grpc/serve.proto`, `grpc/memory.proto` — gRPC services shared between hub and chain adapters.
-- `vectors/` — JSON fixtures verifying encryption envelopes, serve attestations, and contest life cycles.
+- `vectors/` — JSON fixtures verifying encryption envelopes, serve receipts, and contest life cycles.
 
 ## Versioning Strategy
 
