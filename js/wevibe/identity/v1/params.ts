@@ -2,29 +2,25 @@
 // versions:
 //   protoc-gen-ts_proto  v2.11.8
 //   protoc               unknown
-// source: wevibe/attestation/v1/params.proto
+// source: wevibe/identity/v1/params.proto
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 
-export const protobufPackage = "wevibe.attestation.v1";
+export const protobufPackage = "wevibe.identity.v1";
 
 export interface Params {
-  maxAttestationsPerEpoch: string;
-  requireAttestationForServe: boolean;
+  active: boolean;
 }
 
 function createBaseParams(): Params {
-  return { maxAttestationsPerEpoch: "0", requireAttestationForServe: false };
+  return { active: false };
 }
 
 export const Params: MessageFns<Params> = {
   encode(message: Params, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.maxAttestationsPerEpoch !== "0") {
-      writer.uint32(8).uint64(message.maxAttestationsPerEpoch);
-    }
-    if (message.requireAttestationForServe !== false) {
-      writer.uint32(16).bool(message.requireAttestationForServe);
+    if (message.active !== false) {
+      writer.uint32(8).bool(message.active);
     }
     return writer;
   },
@@ -41,15 +37,7 @@ export const Params: MessageFns<Params> = {
             break;
           }
 
-          message.maxAttestationsPerEpoch = reader.uint64().toString();
-          continue;
-        }
-        case 2: {
-          if (tag !== 16) {
-            break;
-          }
-
-          message.requireAttestationForServe = reader.bool();
+          message.active = reader.bool();
           continue;
         }
       }
@@ -62,27 +50,13 @@ export const Params: MessageFns<Params> = {
   },
 
   fromJSON(object: any): Params {
-    return {
-      maxAttestationsPerEpoch: isSet(object.maxAttestationsPerEpoch)
-        ? globalThis.String(object.maxAttestationsPerEpoch)
-        : isSet(object.max_attestations_per_epoch)
-        ? globalThis.String(object.max_attestations_per_epoch)
-        : "0",
-      requireAttestationForServe: isSet(object.requireAttestationForServe)
-        ? globalThis.Boolean(object.requireAttestationForServe)
-        : isSet(object.require_attestation_for_serve)
-        ? globalThis.Boolean(object.require_attestation_for_serve)
-        : false,
-    };
+    return { active: isSet(object.active) ? globalThis.Boolean(object.active) : false };
   },
 
   toJSON(message: Params): unknown {
     const obj: any = {};
-    if (message.maxAttestationsPerEpoch !== "0") {
-      obj.maxAttestationsPerEpoch = message.maxAttestationsPerEpoch;
-    }
-    if (message.requireAttestationForServe !== false) {
-      obj.requireAttestationForServe = message.requireAttestationForServe;
+    if (message.active !== false) {
+      obj.active = message.active;
     }
     return obj;
   },
@@ -92,8 +66,7 @@ export const Params: MessageFns<Params> = {
   },
   fromPartial<I extends Exact<DeepPartial<Params>, I>>(object: I): Params {
     const message = createBaseParams();
-    message.maxAttestationsPerEpoch = object.maxAttestationsPerEpoch ?? "0";
-    message.requireAttestationForServe = object.requireAttestationForServe ?? false;
+    message.active = object.active ?? false;
     return message;
   },
 };

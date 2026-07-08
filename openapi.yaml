@@ -485,12 +485,13 @@ components:
 
     RecordServeRequest:
       type: object
-      required: [memory_content_hash, serve_key, contributor_id, nullifier, epoch_id]
+      required: [memory_content_hash, serve_key_pubkey, serve_sig, nonce, contributor_id, epoch_id]
       properties:
         memory_content_hash: { type: string, description: 64-char hex }
-        serve_key: { type: string }
+        serve_key_pubkey: { type: string, description: 64-char hex }
+        serve_sig: { type: string, description: 128-char hex }
+        nonce: { type: string, description: hex string }
         contributor_id: { type: string }
-        nullifier: { type: string, description: 64-char hex }
         epoch_id: { type: integer }
         model_id: { type: string }
         turn_count: { type: integer }
@@ -499,7 +500,7 @@ components:
       type: object
       properties:
         status: { type: string, example: recorded }
-        nullifier: { type: string }
+        serve_fingerprint: { type: string, description: 64-char hex hub-computed dedup key }
 
     BatchSubmitServesResponse:
       type: object
@@ -1124,7 +1125,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/RecordServeResponse" }
         "400": { description: Validation error }
-        "409": { description: Duplicate nullifier }
+        "409": { description: Duplicate serve_fingerprint }
 
   /v1/orgs/{orgID}/serves/batch-submit:
     post:

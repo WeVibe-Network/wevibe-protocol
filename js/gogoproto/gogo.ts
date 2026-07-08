@@ -2,8 +2,8 @@
 // versions:
 //   protoc-gen-ts_proto  v2.11.8
 //   protoc               unknown
-// source: google/api/annotations.proto
+// source: gogoproto/gogo.proto
 
 /* eslint-disable */
 
-export const protobufPackage = "google.api";
+export const protobufPackage = "gogoproto";
