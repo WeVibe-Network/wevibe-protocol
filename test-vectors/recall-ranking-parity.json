@@ -520,6 +520,53 @@
           "total": 5
         }
       }
+    },
+    {
+      "name": "floor_before_freshness",
+      "candidates": [
+        {
+          "id": "A",
+          "vectorScore": 0.5,
+          "keywordWeights": {},
+          "pendingDenials": 0,
+          "age": 0
+        },
+        {
+          "id": "B",
+          "vectorScore": 0.8,
+          "keywordWeights": {},
+          "pendingDenials": 0,
+          "age": 0
+        }
+      ],
+      "query": {
+        "keywordWeights": {}
+      },
+      "opts": {
+        "gate": false,
+        "keywordBoostFactor": 0.1,
+        "delta": 0.15,
+        "newMemBoost": true,
+        "grace": 20,
+        "boostWindow": 30,
+        "newMemMult": 0.5,
+        "floor": 0.6
+      },
+      "expected": {
+        "order": [
+          "B"
+        ],
+        "finals": {
+          "B": 1.2
+        },
+        "dropCount": {
+          "gate": 0,
+          "vector": 0,
+          "floor": 1,
+          "kept": 1,
+          "total": 2
+        }
+      }
     }
   ]
 }
