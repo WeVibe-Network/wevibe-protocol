@@ -557,14 +557,14 @@
           "B"
         ],
         "finals": {
-          "B": 1.2
+          "B": 1.2000000000000002
         },
         "dropCount": {
           "gate": 0,
           "vector": 0,
-          "floor": 1,
           "kept": 1,
-          "total": 2
+          "total": 2,
+          "floor": 1
         }
       }
     }
