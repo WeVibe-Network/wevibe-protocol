@@ -41,21 +41,22 @@ export const wevibeMessageRegistryEntries: ReadonlyArray<[string, GeneratedType]
 
   // Org
   ['/wevibe.org.v1.MsgRegisterOrg',             orgV1.MsgRegisterOrg             as unknown as GeneratedType],
-  ['/wevibe.org.v1.MsgUpdateMemberRole',        orgV1.MsgUpdateMemberRole        as unknown as GeneratedType],
+  ['/wevibe.org.v1.MsgSetServingKey',           orgV1.MsgSetServingKey           as unknown as GeneratedType],
+  ['/wevibe.org.v1.MsgSetServingInfo',          orgV1.MsgSetServingInfo          as unknown as GeneratedType],
   ['/wevibe.org.v1.MsgRotateEpoch',             orgV1.MsgRotateEpoch             as unknown as GeneratedType],
   ['/wevibe.org.v1.MsgTransferLeadership',      orgV1.MsgTransferLeadership      as unknown as GeneratedType],
   ['/wevibe.org.v1.MsgCloseOrg',                orgV1.MsgCloseOrg                as unknown as GeneratedType],
   ['/wevibe.org.v1.MsgAddMember',               orgV1.MsgAddMember               as unknown as GeneratedType],
   ['/wevibe.org.v1.MsgRemoveMember',            orgV1.MsgRemoveMember            as unknown as GeneratedType],
   ['/wevibe.org.v1.MsgUpdateParams',            orgV1.MsgUpdateParams            as unknown as GeneratedType],
-  ['/wevibe.org.v1.MsgFundTreasury',            orgV1.MsgFundTreasury            as unknown as GeneratedType],
-  ['/wevibe.org.v1.MsgWithdrawTreasury',        orgV1.MsgWithdrawTreasury        as unknown as GeneratedType],
-  ['/wevibe.org.v1.MsgSetRepTiers',             orgV1.MsgSetRepTiers             as unknown as GeneratedType],
   ['/wevibe.org.v1.MsgSetOrgConfig',            orgV1.MsgSetOrgConfig            as unknown as GeneratedType],
   ['/wevibe.org.v1.MsgGrantTrialAllowance',     orgV1.MsgGrantTrialAllowance     as unknown as GeneratedType],
+  ['/wevibe.org.v1.MsgSetMemberCapabilities',   orgV1.MsgSetMemberCapabilities   as unknown as GeneratedType],
 
   // Serve
   ['/wevibe.serve.v1.MsgSubmitServeBatch',      serveV1.MsgSubmitServeBatch      as unknown as GeneratedType],
+  ['/wevibe.serve.v1.MsgSubmitEventBatch',      serveV1.MsgSubmitEventBatch      as unknown as GeneratedType],
+  ['/wevibe.serve.v1.MsgAnchorPolicyVersion',   serveV1.MsgAnchorPolicyVersion   as unknown as GeneratedType],
   ['/wevibe.serve.v1.MsgSubmitDenialBatch',     serveV1.MsgSubmitDenialBatch     as unknown as GeneratedType],
   ['/wevibe.serve.v1.MsgUpdateParams',          serveV1.MsgUpdateParams          as unknown as GeneratedType],
 
@@ -76,6 +77,6 @@ export const wevibeMessageRegistryEntries: ReadonlyArray<[string, GeneratedType]
 
   // Emissions
   ['/wevibe.emissions.v1.MsgMintDailyEmission',        emissionsV1.MsgMintDailyEmission         as unknown as GeneratedType],
-  ['/wevibe.emissions.v1.MsgDistributeOperatorRewards', emissionsV1.MsgDistributeOperatorRewards as unknown as GeneratedType],
+  ['/wevibe.emissions.v1.MsgClaimContributorReward',   emissionsV1.MsgClaimContributorReward    as unknown as GeneratedType],
   ['/wevibe.emissions.v1.MsgUpdateParams',             emissionsV1.MsgUpdateParams              as unknown as GeneratedType],
 ];

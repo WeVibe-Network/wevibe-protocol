@@ -24,6 +24,7 @@ export * as emissionsV1 from './wevibe/emissions/v1/tx';
 export * as memoryV1 from './wevibe/memory/v1/tx';
 export * as orgV1 from './wevibe/org/v1/tx';
 export * as reputationV1 from './wevibe/reputation/v1/tx';
+export * as serveEventV1 from './wevibe/serve/v1/event';
 export * as serveV1 from './wevibe/serve/v1/tx';
 
 // Flat re-exports of non-colliding Msg request types.
@@ -38,21 +39,22 @@ export {
 
 export {
   MsgRegisterOrg,
-  MsgUpdateMemberRole,
+  MsgSetServingKey,
+  MsgSetServingInfo,
   MsgRotateEpoch,
   MsgTransferLeadership,
   MsgCloseOrg,
   MsgAddMember,
   MsgRemoveMember,
-  MsgFundTreasury,
-  MsgWithdrawTreasury,
-  MsgSetRepTiers,
   MsgSetOrgConfig,
   MsgGrantTrialAllowance,
+  MsgSetMemberCapabilities,
 } from './wevibe/org/v1/tx';
 
 export {
   MsgSubmitServeBatch,
+  MsgSubmitEventBatch,
+  MsgAnchorPolicyVersion,
   MsgSubmitDenialBatch,
 } from './wevibe/serve/v1/tx';
 
@@ -69,7 +71,7 @@ export {
 
 export {
   MsgMintDailyEmission,
-  MsgDistributeOperatorRewards,
+  MsgClaimContributorReward,
 } from './wevibe/emissions/v1/tx';
 
 export {
