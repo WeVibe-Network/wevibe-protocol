@@ -148,6 +148,8 @@ export interface OutcomeEventBody {
   worked: boolean;
   /** GSTV-sealed pattern reference. */
   evidenceRef: Uint8Array;
+  /** Fingerprint of the originating serve (ComputeServeFingerprint) — the pairing reference. Content-free. */
+  serveRef: Uint8Array;
 }
 
 export interface ValidityPredicateEventBody {
@@ -212,7 +214,7 @@ export interface StoredPolicyAnchor {
 }
 
 function createBaseOutcomeEventBody(): OutcomeEventBody {
-  return { episodeRef: new Uint8Array(0), worked: false, evidenceRef: new Uint8Array(0) };
+  return { episodeRef: new Uint8Array(0), worked: false, evidenceRef: new Uint8Array(0), serveRef: new Uint8Array(0) };
 }
 
 export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
@@ -225,6 +227,9 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
     }
     if (message.evidenceRef.length !== 0) {
       writer.uint32(26).bytes(message.evidenceRef);
+    }
+    if (message.serveRef.length !== 0) {
+      writer.uint32(34).bytes(message.serveRef);
     }
     return writer;
   },
@@ -260,6 +265,14 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
           message.evidenceRef = reader.bytes();
           continue;
         }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.serveRef = reader.bytes();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -282,6 +295,11 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
         : isSet(object.evidence_ref)
         ? bytesFromBase64(object.evidence_ref)
         : new Uint8Array(0),
+      serveRef: isSet(object.serveRef)
+        ? bytesFromBase64(object.serveRef)
+        : isSet(object.serve_ref)
+        ? bytesFromBase64(object.serve_ref)
+        : new Uint8Array(0),
     };
   },
 
@@ -296,6 +314,9 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
     if (message.evidenceRef.length !== 0) {
       obj.evidenceRef = base64FromBytes(message.evidenceRef);
     }
+    if (message.serveRef.length !== 0) {
+      obj.serveRef = base64FromBytes(message.serveRef);
+    }
     return obj;
   },
 
@@ -307,6 +328,7 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
     message.episodeRef = object.episodeRef ?? new Uint8Array(0);
     message.worked = object.worked ?? false;
     message.evidenceRef = object.evidenceRef ?? new Uint8Array(0);
+    message.serveRef = object.serveRef ?? new Uint8Array(0);
     return message;
   },
 };
