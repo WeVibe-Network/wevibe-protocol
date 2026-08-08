@@ -141,15 +141,114 @@ export function predicateResultToJSON(object: PredicateResult): string {
   }
 }
 
+/**
+ * E3 resolution tri-state (WO-ATTRIB, 2026-08-07): an unobserved use is
+ * recordable as UNOBSERVED — an observed fact about the episode close, never
+ * an inferred verdict. Silence is not a vote.
+ */
+export enum OutcomeResolution {
+  OUTCOME_RESOLUTION_UNSPECIFIED = 0,
+  OUTCOME_RESOLUTION_WORKED = 1,
+  OUTCOME_RESOLUTION_DIDNT_WORK = 2,
+  /**
+   * OUTCOME_RESOLUTION_UNOBSERVED - The episode closed with no resolution signal observed. Non-claiming in the
+   * edge standing engine: the serve stays pending until a real outcome pairs
+   * or the policy window voids it.
+   */
+  OUTCOME_RESOLUTION_UNOBSERVED = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function outcomeResolutionFromJSON(object: any): OutcomeResolution {
+  switch (object) {
+    case 0:
+    case "OUTCOME_RESOLUTION_UNSPECIFIED":
+      return OutcomeResolution.OUTCOME_RESOLUTION_UNSPECIFIED;
+    case 1:
+    case "OUTCOME_RESOLUTION_WORKED":
+      return OutcomeResolution.OUTCOME_RESOLUTION_WORKED;
+    case 2:
+    case "OUTCOME_RESOLUTION_DIDNT_WORK":
+      return OutcomeResolution.OUTCOME_RESOLUTION_DIDNT_WORK;
+    case 3:
+    case "OUTCOME_RESOLUTION_UNOBSERVED":
+      return OutcomeResolution.OUTCOME_RESOLUTION_UNOBSERVED;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return OutcomeResolution.UNRECOGNIZED;
+  }
+}
+
+export function outcomeResolutionToJSON(object: OutcomeResolution): string {
+  switch (object) {
+    case OutcomeResolution.OUTCOME_RESOLUTION_UNSPECIFIED:
+      return "OUTCOME_RESOLUTION_UNSPECIFIED";
+    case OutcomeResolution.OUTCOME_RESOLUTION_WORKED:
+      return "OUTCOME_RESOLUTION_WORKED";
+    case OutcomeResolution.OUTCOME_RESOLUTION_DIDNT_WORK:
+      return "OUTCOME_RESOLUTION_DIDNT_WORK";
+    case OutcomeResolution.OUTCOME_RESOLUTION_UNOBSERVED:
+      return "OUTCOME_RESOLUTION_UNOBSERVED";
+    case OutcomeResolution.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+/**
+ * E3 provenance: harvested = plugin-observed tool signals; user = the
+ * consumer's explicit confirm/deny report (the fallback/dispute path).
+ */
+export enum OutcomeSource {
+  OUTCOME_SOURCE_UNSPECIFIED = 0,
+  OUTCOME_SOURCE_HARVESTED = 1,
+  OUTCOME_SOURCE_USER = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function outcomeSourceFromJSON(object: any): OutcomeSource {
+  switch (object) {
+    case 0:
+    case "OUTCOME_SOURCE_UNSPECIFIED":
+      return OutcomeSource.OUTCOME_SOURCE_UNSPECIFIED;
+    case 1:
+    case "OUTCOME_SOURCE_HARVESTED":
+      return OutcomeSource.OUTCOME_SOURCE_HARVESTED;
+    case 2:
+    case "OUTCOME_SOURCE_USER":
+      return OutcomeSource.OUTCOME_SOURCE_USER;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return OutcomeSource.UNRECOGNIZED;
+  }
+}
+
+export function outcomeSourceToJSON(object: OutcomeSource): string {
+  switch (object) {
+    case OutcomeSource.OUTCOME_SOURCE_UNSPECIFIED:
+      return "OUTCOME_SOURCE_UNSPECIFIED";
+    case OutcomeSource.OUTCOME_SOURCE_HARVESTED:
+      return "OUTCOME_SOURCE_HARVESTED";
+    case OutcomeSource.OUTCOME_SOURCE_USER:
+      return "OUTCOME_SOURCE_USER";
+    case OutcomeSource.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export interface OutcomeEventBody {
   /** Fingerprint of session identity + need reference — content-free. */
   episodeRef: Uint8Array;
-  /** Raw observed fact bound to evidence — never a verdict. */
-  worked: boolean;
   /** GSTV-sealed pattern reference. */
   evidenceRef: Uint8Array;
   /** Fingerprint of the originating serve (ComputeServeFingerprint) — the pairing reference. Content-free. */
   serveRef: Uint8Array;
+  /** Raw observed fact bound to evidence — never a verdict. */
+  resolution: OutcomeResolution;
+  source: OutcomeSource;
 }
 
 export interface ValidityPredicateEventBody {
@@ -214,7 +313,13 @@ export interface StoredPolicyAnchor {
 }
 
 function createBaseOutcomeEventBody(): OutcomeEventBody {
-  return { episodeRef: new Uint8Array(0), worked: false, evidenceRef: new Uint8Array(0), serveRef: new Uint8Array(0) };
+  return {
+    episodeRef: new Uint8Array(0),
+    evidenceRef: new Uint8Array(0),
+    serveRef: new Uint8Array(0),
+    resolution: 0,
+    source: 0,
+  };
 }
 
 export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
@@ -222,14 +327,17 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
     if (message.episodeRef.length !== 0) {
       writer.uint32(10).bytes(message.episodeRef);
     }
-    if (message.worked !== false) {
-      writer.uint32(16).bool(message.worked);
-    }
     if (message.evidenceRef.length !== 0) {
       writer.uint32(26).bytes(message.evidenceRef);
     }
     if (message.serveRef.length !== 0) {
       writer.uint32(34).bytes(message.serveRef);
+    }
+    if (message.resolution !== 0) {
+      writer.uint32(40).int32(message.resolution);
+    }
+    if (message.source !== 0) {
+      writer.uint32(48).int32(message.source);
     }
     return writer;
   },
@@ -249,14 +357,6 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
           message.episodeRef = reader.bytes();
           continue;
         }
-        case 2: {
-          if (tag !== 16) {
-            break;
-          }
-
-          message.worked = reader.bool();
-          continue;
-        }
         case 3: {
           if (tag !== 26) {
             break;
@@ -271,6 +371,22 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
           }
 
           message.serveRef = reader.bytes();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.resolution = reader.int32() as any;
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.source = reader.int32() as any;
           continue;
         }
       }
@@ -289,7 +405,6 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
         : isSet(object.episode_ref)
         ? bytesFromBase64(object.episode_ref)
         : new Uint8Array(0),
-      worked: isSet(object.worked) ? globalThis.Boolean(object.worked) : false,
       evidenceRef: isSet(object.evidenceRef)
         ? bytesFromBase64(object.evidenceRef)
         : isSet(object.evidence_ref)
@@ -300,6 +415,8 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
         : isSet(object.serve_ref)
         ? bytesFromBase64(object.serve_ref)
         : new Uint8Array(0),
+      resolution: isSet(object.resolution) ? outcomeResolutionFromJSON(object.resolution) : 0,
+      source: isSet(object.source) ? outcomeSourceFromJSON(object.source) : 0,
     };
   },
 
@@ -308,14 +425,17 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
     if (message.episodeRef.length !== 0) {
       obj.episodeRef = base64FromBytes(message.episodeRef);
     }
-    if (message.worked !== false) {
-      obj.worked = message.worked;
-    }
     if (message.evidenceRef.length !== 0) {
       obj.evidenceRef = base64FromBytes(message.evidenceRef);
     }
     if (message.serveRef.length !== 0) {
       obj.serveRef = base64FromBytes(message.serveRef);
+    }
+    if (message.resolution !== 0) {
+      obj.resolution = outcomeResolutionToJSON(message.resolution);
+    }
+    if (message.source !== 0) {
+      obj.source = outcomeSourceToJSON(message.source);
     }
     return obj;
   },
@@ -326,9 +446,10 @@ export const OutcomeEventBody: MessageFns<OutcomeEventBody> = {
   fromPartial<I extends Exact<DeepPartial<OutcomeEventBody>, I>>(object: I): OutcomeEventBody {
     const message = createBaseOutcomeEventBody();
     message.episodeRef = object.episodeRef ?? new Uint8Array(0);
-    message.worked = object.worked ?? false;
     message.evidenceRef = object.evidenceRef ?? new Uint8Array(0);
     message.serveRef = object.serveRef ?? new Uint8Array(0);
+    message.resolution = object.resolution ?? 0;
+    message.source = object.source ?? 0;
     return message;
   },
 };
