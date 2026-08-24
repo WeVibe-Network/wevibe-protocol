@@ -13,58 +13,52 @@
 
 ---
 
-**Cross-component contract definitions and conformance artifacts for the WeVibe Network.**
+**One machine-readable contract + shared test vectors that pin every component to the same shapes.**
 
-## Overview
+`wevibe-protocol` is a content-only contract repository: no running service, no executable logic. It is where independently built components — the Go hub, the JavaScript sim, the TypeScript dashboard, and Rust clients — agree on byte-level shapes, and where that agreement is checked. Status: **alpha**. The contract is the aspirational shared surface; where design intent outruns implementation, this file says so.
 
-`wevibe-protocol` is the shared contract repository used across independently built components.
+The pinning that actually works today is the shared golden test vectors, consumed by downstream parity checks in two languages. The OpenAPI spec and the generated bindings describe the surface; the vectors are what enforce it.
 
-It currently includes:
-- `openapi.yaml` — Hub HTTP API contract
-- `test_vectors/` — protocol-level vectors consumed by SDK, hub, dashboard, and MCP clients
-- `contract_test.sh` — contract-conformance harness for a running hub
-- `docs/PROTOCOL.md` — protocol specification overview
-- `js/` — generated TypeScript bindings published as `@wevibe-network/protocol-js`
+## What is here
 
-Status: **alpha**. Core contracts, vectors, and conformance checks exist today. Hub response-signing rollout across deployments is a near-term milestone.
+| Path | Contents |
+|---|---|
+| `openapi.yaml` | Hub HTTP API contract — OpenAPI 3.1.0, "WeVibe Network Hub API" v0.3.0, dev server `http://localhost:4440`. 32 paths across Health, Organizations, Epochs, Members, Dashboard, Recovery, Moderation, Serves, Retrieval, Reports, Keywords, Billing. Three security schemes: `WeVibeSigned`, `BodySignature`, `HubSigned`. Models memory submission (`POST /v1/orgs/{orgID}/submit`), approval, and recall query/response (`POST /v1/orgs/{orgID}/query` incl. `ScoringBreakdown`). |
+| `js/` | TypeScript bindings for the **chain protobuf** message surface (`wevibe/{attestation,bandwidth,emissions,identity,memory,org,reputation,serve}/v1/{params,query,state,tx}.ts`), generated from proto — not from OpenAPI. |
+| `test_vectors/` | 7 golden protocol vectors: `epoch_key_derivation`, `fee_model_hash`, `hub_response_signing_v1`, `mnemonic_roundtrip`, `relay_envelope_v1`, `seal_open_envelope`, `shamir_roundtrip`. |
+| `test-vectors/` | `recall-ranking-parity.json` — 10 golden ranking cases, schema `recall-ranking-parity/v1`. |
+| `contract_test.sh` | 3-check **liveness smoke** against a running hub (health→ok, unknown org→error, submit-without-body→error). A smoke test, not a deep conformance pin. |
+| `docs/` | PROTOCOL.md, TOPOLOGY.md, PDP.md, WHITEPAPER.md. |
 
-## Role in the WeVibe Network
+## How the pinning actually works
 
-This repository exists so self-hosted hubs, clients, and forks can conform to one verifiable interface and one signature-verification path.
+**Cross-language ranking parity.** `test-vectors/recall-ranking-parity.json` is checked against *both* the Go hub ranker and the JS sim ranker (`make parity-check` in wevibe-meta). Same 10 inputs, same scores, in two independently written implementations — drift fails the parity check, not the user.
 
-In particular, the hub-response signature contract is specified here (see `openapi.yaml` and `test_vectors/hub_response_signing_v1.json`), with response verification tied to org key material resolved from chain serving metadata.
+**Canonical signature shapes.** The canonical message shapes for signing live in the vectors, not the spec: `test_vectors/hub_response_signing_v1.json` and `test_vectors/relay_envelope_v1.json` define the byte-level digest format as a contract of truth. `relay_envelope_v1` is consumed directly by the dashboard's `canonical-body.ts`. Caveat: `hub_response_signing_v1` expected values are still placeholder strings.
 
-## Getting started (build/run)
+**Auditable codegen seam.** `npm run regen` → `codegen/regen.sh` → Docker `bufbuild/buf:1.34.0` (pinned), generating into `js/`. Regen wipes only `js/wevibe/` and preserves the two hand-authored files — `js/index.ts` (re-exports) and `js/registry.ts` (CosmJS registry of Msg type URLs). This path is separate from the wevibe-meta `make proto-gen` umbrella, which emits Go `.pb.go` only.
 
-### Regenerate TypeScript bindings
+## Known gaps — stated plainly
 
-The `@wevibe-network/protocol-js` package is generated via `buf` + `ts-proto`.
+- The ts-proto remote plugin is **unpinned** in `buf.gen.yaml` (line 3) — the one deviation from this repo's pinning discipline.
+- The generated `js/` bindings / npm package `@wevibe-network/protocol-js` (v0.1.0, `private: true`; dep `@bufbuild/protobuf ^2.2.0`, peer `@cosmjs/proto-signing ^0.32.0`) have **no in-workspace consumer today**. The vectors, not the bindings, are what downstream code currently consumes.
+- The spec's `ApproveRequest` shape is **known-stale** vs the live hub, which carries `umbral_capsule`/`umbral_ciphertext` instead of `wrapped_dek_enc`.
+- The spec does **not** model goal-sealed verification receipt fields; canonical signature message shapes live in the test vectors (see above).
+- The `openapi.yaml` surface and the `js/` proto surface are disjoint — no client is generated from the OpenAPI spec.
+
+## Regenerate the TypeScript bindings
 
 ```sh
-npm run regen
-# or
-bash codegen/regen.sh
+npm run regen   # codegen/regen.sh → pinned bufbuild/buf:1.34.0 → js/
 ```
 
-### Run the conformance harness against a hub
+Regen wipes only `js/wevibe/`; `js/index.ts` and `js/registry.ts` survive. If you edit a generated file, the next regen deletes your edit — change the proto, then regen.
+
+## Run the hub smoke test
 
 ```sh
-bash contract_test.sh
+bash contract_test.sh   # expects a hub at http://localhost:4440
 ```
-
-## Testing
-
-- `bash contract_test.sh` runs the contract smoke checks against a running hub.
-- `test_vectors/` contains deterministic protocol fixtures for cross-client compatibility verification.
-
-## Configuration (environment and ports)
-
-- The OpenAPI development server target is `http://localhost:4440`.
-- `contract_test.sh` uses the same hub base URL (`BASE="http://localhost:4440"`).
-
-## Roadmap
-
-See [ROADMAP.md](./ROADMAP.md).
 
 ## License
 
